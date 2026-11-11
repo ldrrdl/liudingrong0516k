@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="符造局·绘图室 — 以矢量描边存在的图标，Lucide SVG 线稿图纸">
+    <title>绘图室 · 矢量图标 — 符造局</title>
+    <script src="./cdn/js/lucide.min.js"></script>
+    <style>
+        :root {
+            --ldr-blue: #122A40;
+            --ldr-blue-2: #0D2135;
+            --ldr-line: rgba(220, 231, 240, .32);
+            --ldr-line-soft: rgba(220, 231, 240, .14);
+            --ldr-chalk: #DCE7F0;
+            --ldr-note: #7FA6C4;
+            --ldr-amber: #E0A438;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background-color: var(--ldr-blue);
+            background-image:
+                linear-gradient(rgba(220, 231, 240, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(220, 231, 240, .05) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--ldr-chalk);
+            line-height: 1.7;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 3px solid var(--ldr-amber);
+            outline-offset: 2px;
+        }
+
+        /* ===== 顶部品牌栏 ===== */
+        .ldr_sitehead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 18px clamp(20px, 6vw, 72px);
+            border-bottom: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+        }
+
+        .ldr_brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: .08em;
+        }
+
+        .ldr_brandmark {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            background: var(--ldr-amber);
+            color: var(--ldr-blue-2);
+            font-size: 22px;
+        }
+
+        .ldr_brand em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 11px;
+            letter-spacing: .34em;
+            color: var(--ldr-note);
+            margin-left: 2px;
+        }
+
+        .ldr_nav { display: flex; gap: clamp(14px, 3vw, 34px); font-size: 15px; }
+
+        .ldr_nav a {
+            padding: 4px 2px;
+            border-bottom: 3px solid transparent;
+            color: var(--ldr-note);
+        }
+
+        .ldr_nav a:hover { color: var(--ldr-chalk); border-bottom-color: var(--ldr-line); }
+        .ldr_nav a[aria-current="page"] { color: var(--ldr-chalk); font-weight: 700; border-bottom-color: var(--ldr-amber); }
+
+        /* ===== 主区 ===== */
+        .ldr_main { max-width: 1120px; margin: 0 auto; padding: 0 clamp(20px, 6vw, 72px); }
+
+        /* ---- 首屏：文案 + 大图框 ---- */
+        .ldr_hero {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: clamp(28px, 6vw, 72px);
+            align-items: center;
+            padding: clamp(40px, 8vw, 88px) 0 clamp(32px, 6vw, 64px);
+        }
+
+        .ldr_hero h1 {
+            font-size: clamp(44px, 7vw, 76px);
+            font-weight: 900;
+            letter-spacing: .1em;
+            line-height: 1.15;
+        }
+
+        .ldr_lede { margin-top: 14px; max-width: 34em; color: #AFC4D6; font-size: 16px; }
+        .ldr_lede strong { color: var(--ldr-amber); }
+
+        /* 描边粗细调节 —— SVG 图标独有的能力 */
+        .ldr_stroker {
+            margin-top: 28px;
+            padding: 16px 20px;
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            max-width: 460px;
+        }
+
+        .ldr_stroker label { font-size: 13px; letter-spacing: .18em; color: var(--ldr-note); white-space: nowrap; }
+        .ldr_stroker input[type="range"] { flex: 1; min-width: 140px; accent-color: var(--ldr-amber); cursor: pointer; }
+        .ldr_stroker output {
+            font-family: Consolas, monospace;
+            font-size: 15px;
+            color: var(--ldr-amber);
+            min-width: 3.2em;
+            text-align: right;
+        }
+
+        /* 大图框：蓝图稿纸 */
+        .ldr_blueprint {
+            position: relative;
+            width: clamp(200px, 26vw, 264px);
+            aspect-ratio: 1;
+            border: 1px solid var(--ldr-line);
+            background:
+                linear-gradient(to right, transparent calc(50% - .5px), var(--ldr-line-soft) calc(50% - .5px), var(--ldr-line-soft) calc(50% + .5px), transparent calc(50% + .5px)),
+                linear-gradient(to bottom, transparent calc(50% - .5px), var(--ldr-line-soft) calc(50% - .5px), var(--ldr-line-soft) calc(50% + .5px), transparent calc(50% + .5px)),
+                var(--ldr-blue-2);
+            display: grid;
+            place-items: center;
+        }
+
+        .ldr_blueprint::before, .ldr_blueprint::after {
+            content: "";
+            position: absolute;
+            width: 9px;
+            height: 9px;
+            background: var(--ldr-amber);
+        }
+        .ldr_blueprint::before { top: -1px; left: -1px; }
+        .ldr_blueprint::after { bottom: -1px; right: -1px; }
+
+        .ldr_blueprint svg { width: 112px; height: 112px; color: var(--ldr-chalk); }
+
+        .ldr_blueprint figcaption {
+            position: absolute;
+            left: 12px;
+            bottom: 10px;
+            font-family: Consolas, monospace;
+            font-size: 10px;
+            letter-spacing: .2em;
+            color: var(--ldr-note);
+        }
+
+        /* ---- 用法代码条 ---- */
+        .ldr_usage {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid var(--ldr-line);
+            border-left: 6px solid var(--ldr-amber);
+            background: var(--ldr-blue-2);
+            padding: 14px 20px;
+            margin-bottom: clamp(40px, 7vw, 72px);
+        }
+
+        .ldr_usage b {
+            color: var(--ldr-chalk);
+            font-weight: 400;
+            font-size: 11px;
+            letter-spacing: .26em;
+            white-space: nowrap;
+        }
+
+        .ldr_usage code {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 14px;
+            color: #B9CCDD;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+
+        .ldr_usage code i { color: var(--ldr-amber); font-style: normal; }
+
+        /* ---- 图纸分区 ---- */
+        .ldr_case { padding-bottom: clamp(40px, 7vw, 72px); }
+
+        .ldr_casehead {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--ldr-line);
+            padding-bottom: 10px;
+        }
+
+        .ldr_casehead h2 { font-size: 26px; font-weight: 900; letter-spacing: .1em; }
+        .ldr_casehead h2::before { content: "◆"; color: var(--ldr-amber); font-size: 13px; margin-right: 10px; vertical-align: 3px; }
+        .ldr_casehead small { font-family: Consolas, monospace; font-size: 12px; letter-spacing: .22em; color: var(--ldr-note); }
+
+        .ldr_tray {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 14px;
+        }
+
+        /* 图框卡片：工程图纸 title block 式样 */
+        .ldr_sheet {
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+            transition: border-color .18s ease;
+        }
+
+        .ldr_sheet::before { content: none; }
+
+        .ldr_view {
+            display: grid;
+            place-items: center;
+            height: 104px;
+            border-bottom: 1px dashed var(--ldr-line-soft);
+        }
+
+        .ldr_view svg { width: 40px; height: 40px; color: var(--ldr-chalk); }
+
+        .ldr_sheet:hover { border-color: var(--ldr-amber); }
+        .ldr_sheet:hover .ldr_view svg { stroke-width: 2.4; }
+
+        .ldr_plate {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 9px 12px;
+            font-family: Consolas, monospace;
+            font-size: 11px;
+        }
+
+        .ldr_name { font-weight: 400; color: var(--ldr-chalk); letter-spacing: .04em; }
+        .ldr_spec { color: var(--ldr-note); white-space: nowrap; }
+
+        /* ===== 页脚 ===== */
+        .ldr_footer {
+            border-top: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+            padding: 22px clamp(20px, 6vw, 72px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--ldr-note);
+        }
+
+        .ldr_footer nav { display: flex; gap: 20px; }
+        .ldr_footer nav a:hover { color: var(--ldr-amber); }
+        .ldr_footer nav a[aria-current="page"] { color: var(--ldr-chalk); font-weight: 700; }
+
+        @media (max-width: 720px) {
+            .ldr_hero { grid-template-columns: 1fr; }
+            .ldr_blueprint { width: min(220px, 56vw); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ldr_sitehead">
+        <a class="ldr_brand" href="./index.html">
+            <span class="ldr_brandmark">符</span>
+            <span>符造局<em>GLYPHWORKS</em></span>
+        </a>
+        <nav class="ldr_nav" aria-label="站点导航">
+            <a href="./index.html">首页</a>
+            <a href="./iconfont-1.html">铸字间</a>
+            <a href="./iconfont-2.html" aria-current="page">绘图室</a>
+        </nav>
+    </header>
+
+    <main class="ldr_main">
+        <section class="ldr_hero">
+            <div>
+                <h1>绘图室</h1>
+                <p class="ldr_lede">在这里，图标以<strong>线稿</strong>的形式存在。每一枚图形都是一段矢量路径，
+                    描边可以随时加粗、变细、染色 —— 这是字形铸件做不到的事。</p>
+                <div class="ldr_stroker">
+                    <label for="ldr_strokerange">描边粗细 STROKE</label>
+                    <input type="range" id="ldr_strokerange" min="0.75" max="3" step="0.25" value="1.5">
+                    <output id="ldr_strokeval" for="ldr_strokerange">1.5 px</output>
+                </div>
+            </div>
+            <figure class="ldr_blueprint">
+                <i data-lucide="pen-tool"></i>
+                <figcaption>GLYPHWORKS / DRAFT No.02</figcaption>
+            </figure>
+        </section>
+
+        <div class="ldr_usage">
+            <b>用 法</b>
+            <code>&lt;i data-lucide="<i>compass</i>"&gt;&lt;/i&gt; &nbsp;&rarr;&nbsp; 脚本把它替换成一段可塑形的 SVG</code>
+        </div>
+
+        <section class="ldr_case" aria-labelledby="ldr-title-draft">
+            <div class="ldr_casehead">
+                <h2 id="ldr-title-draft">线稿图录</h2>
+                <small>STROKE DRAWINGS / 24 SHEETS</small>
+            </div>
+            <div class="ldr_tray" id="ldr_tray">
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="house"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="camera"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="heart"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="star"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="music"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="coffee"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="flame"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="zap"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="moon"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="gem"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="leaf"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="gift"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="bell"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="bookmark"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="cloud"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="code"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="palette"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="brush"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="feather"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="umbrella"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="sun"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="send"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="compass"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+                <figure class="ldr_sheet"><span class="ldr_view"><i data-lucide="map"></i></span><figcaption class="ldr_plate"><b class="ldr_name">—</b><span class="ldr_spec">24 × 24</span></figcaption></figure>
+            </div>
+        </section>
+    </main>
+
+    <footer class="ldr_footer">
+        <p>符造局 GLYPHWORKS · 24002120516 刘丁荣 · 高级网页设计</p>
+        <nav aria-label="页脚导航">
+            <a href="./index.html">首页</a>
+            <a href="./iconfont-1.html">铸字间</a>
+            <a href="./iconfont-2.html" aria-current="page">绘图室</a>
+        </nav>
+    </footer>
+
+    <script>
+        (function () {
+            // 渲染：把 <i data-lucide> 替换为内联 SVG
+            lucide.createIcons();
+
+            // 填写每张图纸的图号（图标名）
+            var ldr_sheets = document.querySelectorAll('.ldr_sheet');
+            ldr_sheets.forEach(function (ldr_sheet) {
+                var ldr_svg = ldr_sheet.querySelector('svg[data-lucide]');
+                var ldr_out = ldr_sheet.querySelector('.ldr_name');
+                if (ldr_svg && ldr_out) ldr_out.textContent = ldr_svg.getAttribute('data-lucide');
+            });
+
+            // 描边粗细调节：直接改写 SVG 属性，实时生效
+            var ldr_range = document.getElementById('ldr_strokerange');
+            var ldr_val = document.getElementById('ldr_strokeval');
+
+            function ldr_applyStroke() {
+                var ldr_w = ldr_range.value;
+                document.querySelectorAll('.ldr_main svg.lucide').forEach(function (ldr_svg) {
+                    ldr_svg.setAttribute('stroke-width', ldr_w);
+                });
+                ldr_val.textContent = ldr_w + ' px';
+            }
+
+            ldr_range.addEventListener('input', ldr_applyStroke);
+            ldr_applyStroke();
+        })();
+    </script>
+</body>
+</html>

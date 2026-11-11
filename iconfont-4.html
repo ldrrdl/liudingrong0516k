@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="符造局·掌上符铺 — 移动端底部固定导航（SVG 版）：本地 iconfont symbol + Lucide，含数字徽章与红点">
+    <title>掌上符铺 · SVG — 符造局</title>
+    <script src="./font/iconfont.js"></script>
+    <script src="./cdn/js/lucide.min.js"></script>
+    <style>
+        :root {
+            --ldr-blue: #122A40;
+            --ldr-blue-2: #0D2135;
+            --ldr-line: rgba(220, 231, 240, .32);
+            --ldr-line-soft: rgba(220, 231, 240, .14);
+            --ldr-chalk: #DCE7F0;
+            --ldr-note: #7FA6C4;
+            --ldr-amber: #E0A438;
+            --ldr-alert: #E5484D;
+            --ldr-nav-h: 58px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background-color: var(--ldr-blue);
+            background-image:
+                linear-gradient(rgba(220, 231, 240, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(220, 231, 240, .05) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: var(--ldr-chalk);
+            line-height: 1.7;
+            padding-bottom: calc(var(--ldr-nav-h) + env(safe-area-inset-bottom) + 24px);
+        }
+
+        a { color: inherit; text-decoration: none; }
+        a:focus-visible { outline: 3px solid var(--ldr-amber); outline-offset: 2px; }
+
+        /* ===== 顶部品牌栏 ===== */
+        .ldr_sitehead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 16px clamp(16px, 5vw, 40px);
+            border-bottom: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+        }
+
+        .ldr_brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: .08em;
+        }
+
+        .ldr_brandmark {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            background: var(--ldr-amber);
+            color: var(--ldr-blue-2);
+            font-size: 20px;
+        }
+
+        .ldr_brand em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 10px;
+            letter-spacing: .3em;
+            color: var(--ldr-note);
+        }
+
+        .ldr_series { font-size: 13px; color: var(--ldr-note); display: flex; gap: 16px; }
+        .ldr_series a:hover { color: var(--ldr-amber); }
+
+        /* ===== 主体 ===== */
+        .ldr_main { max-width: 640px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 40px); }
+
+        .ldr_hero { padding: clamp(28px, 6vw, 48px) 0 18px; }
+
+        .ldr_hero h1 {
+            font-size: clamp(32px, 7vw, 44px);
+            font-weight: 900;
+            letter-spacing: .1em;
+            line-height: 1.2;
+        }
+
+        .ldr_hero h1 small {
+            display: block;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: .26em;
+            color: var(--ldr-amber);
+            margin-top: 6px;
+        }
+
+        .ldr_lede { margin-top: 12px; font-size: 15px; color: #AFC4D6; max-width: 34em; }
+        .ldr_lede strong { color: var(--ldr-amber); }
+
+        .ldr_specs {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 22px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+            font-size: 12.5px;
+            color: var(--ldr-note);
+        }
+
+        .ldr_specs b { color: var(--ldr-chalk); font-weight: 700; margin-right: 4px; }
+
+        /* ---- 货架 ---- */
+        .ldr_shelf { padding: 26px 0 10px; }
+
+        .ldr_shelfhead {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--ldr-line);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .ldr_shelfhead h2 { font-size: 20px; font-weight: 900; letter-spacing: .12em; }
+        .ldr_shelfhead h2::before { content: "◆"; color: var(--ldr-amber); font-size: 12px; margin-right: 8px; vertical-align: 2px; }
+        .ldr_shelfhead small { font-family: Consolas, monospace; font-size: 11px; letter-spacing: .2em; color: var(--ldr-note); }
+
+        .ldr_goods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .ldr_item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-blue-2);
+            padding: 16px 14px 12px;
+        }
+
+        .ldr_pic {
+            display: grid;
+            place-items: center;
+            height: 76px;
+        }
+
+        /* SVG symbol 多色图标：保留设计稿原色 */
+        .ldr_pic .ldr_sym { width: 52px; height: 52px; }
+        .ldr_pic svg.lucide { width: 44px; height: 44px; color: var(--ldr-chalk); }
+
+        .ldr_item h3 { font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+        .ldr_price { font-size: 13px; color: var(--ldr-amber); font-weight: 700; }
+        .ldr_price small { color: var(--ldr-note); font-weight: 400; margin-left: 6px; font-size: 11px; }
+
+        .ldr_note {
+            margin: 22px 0 10px;
+            border-left: 5px solid var(--ldr-amber);
+            background: var(--ldr-blue-2);
+            color: #B9CCDD;
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+
+        .ldr_note b { color: var(--ldr-chalk); }
+
+        .ldr_footinfo {
+            border-top: 1px solid var(--ldr-line);
+            margin-top: 22px;
+            padding: 14px 0 20px;
+            font-size: 12.5px;
+            color: var(--ldr-note);
+        }
+
+        /* ===== 底部固定导航 ===== */
+        .ldr_tabbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            margin: 0 auto;
+            max-width: 560px;
+            height: calc(var(--ldr-nav-h) + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            background: var(--ldr-blue-2);
+            border-top: 1px solid var(--ldr-line);
+            box-shadow: 0 -8px 22px rgba(0, 0, 0, .35);
+        }
+
+        @media (min-width: 600px) {
+            .ldr_tabbar {
+                border: 1px solid var(--ldr-line);
+                border-bottom: none;
+                border-radius: 14px 14px 0 0;
+            }
+        }
+
+        .ldr_tab {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: var(--ldr-note);
+            font-size: 12px;
+            transition: color .18s ease;
+        }
+
+        .ldr_tico {
+            position: relative;
+            display: grid;
+            place-items: center;
+            height: 26px;
+            line-height: 1;
+        }
+
+        .ldr_tico svg.lucide { width: 23px; height: 23px; }
+
+        /* SVG symbol 引用 */
+        .ldr_sym { width: 24px; height: 24px; }
+
+        .ldr_tlabel { letter-spacing: .08em; }
+
+        .ldr_tab[aria-current="page"] { color: var(--ldr-chalk); font-weight: 700; }
+        .ldr_tab[aria-current="page"] .ldr_tico svg.lucide { color: var(--ldr-amber); }
+        .ldr_tab[aria-current="page"]::after {
+            content: "";
+            width: 18px;
+            height: 3px;
+            background: var(--ldr-amber);
+            position: absolute;
+            top: -1px;
+        }
+        .ldr_tab:hover { color: var(--ldr-chalk); }
+
+        /* ---- 徽章 ---- */
+        .ldr_badge {
+            position: absolute;
+            top: -8px;
+            left: calc(50% + 4px);
+            min-width: 17px;
+            height: 17px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: var(--ldr-alert);
+            color: #FFF7EC;
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 17px;
+            text-align: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+            letter-spacing: 0;
+        }
+
+        .ldr_dot {
+            position: absolute;
+            top: -3px;
+            left: calc(50% + 7px);
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--ldr-alert);
+            box-shadow: 0 0 0 2px var(--ldr-blue-2);
+        }
+
+        @media (max-width: 400px) {
+            .ldr_goods { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ldr_sitehead">
+        <a class="ldr_brand" href="./index.html">
+            <span class="ldr_brandmark">符</span>
+            <span>符造局<em>GLYPHWORKS</em></span>
+        </a>
+        <nav class="ldr_series" aria-label="系列页面">
+            <a href="./iconfont-1.html">铸字间</a>
+            <a href="./iconfont-2.html">绘图室</a>
+            <a href="./iconfont-3.html">字体版</a>
+        </nav>
+    </header>
+
+    <main class="ldr_main">
+        <section class="ldr_hero">
+            <h1>掌上符铺<small>MOBILE TABBAR / SVG DRAWINGS</small></h1>
+            <p class="ldr_lede">同一条固定导航，图标换成<strong>矢量线稿</strong>。牛油果与灯泡以 SVG symbol 引入，
+                <strong>多色</strong>原样保留 —— 这是字体图标做不到的事。</p>
+            <ul class="ldr_specs">
+                <li><b>定位</b>position: fixed 贴底悬浮</li>
+                <li><b>宽度</b>flex 均分 · 随视口自适应</li>
+                <li><b>提醒</b>数字徽章 ×1 · 红点 ×1</li>
+                <li><b>图标</b>本地 iconfont symbol ×2 + Lucide ×2</li>
+            </ul>
+        </section>
+
+        <section class="ldr_shelf" id="ldr_shelf" aria-labelledby="ldr-shelf-title">
+            <div class="ldr_shelfhead">
+                <h2 id="ldr-shelf-title">今日货架</h2>
+                <small>ON SHELF</small>
+            </div>
+            <div class="ldr_goods">
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><svg class="ldr_sym"><use href="#icon-niuyouguo"></use></svg></div>
+                    <h3>牛油果符牌 · 青玉</h3>
+                    <p class="ldr_price">¥88<small>镇铺之宝</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><svg class="ldr_sym"><use href="#icon-dengpao"></use></svg></div>
+                    <h3>灯泡形镇纸 · 琥珀</h3>
+                    <p class="ldr_price">¥45<small>手作</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i data-lucide="house"></i></div>
+                    <h3>屋形印盒 · 桃心木</h3>
+                    <p class="ldr_price">¥66<small>限量</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i data-lucide="shopping-basket"></i></div>
+                    <h3>提篮香插 · 竹</h3>
+                    <p class="ldr_price">¥32<small>现货</small></p>
+                </article>
+            </div>
+            <p class="ldr_note">试一试：点「符袋」，右上角的<b>数字徽章</b>会加一；「灵感」头顶的<b>红点</b>在等你点开。当前项的线稿会染成琥珀色。</p>
+            <div class="ldr_footinfo">
+                符造局 GLYPHWORKS · 24002120516 刘丁荣 · 高级网页设计<br>
+                SVG 可多色、可塑形；单色字体版本请看 <a href="./iconfont-3.html" style="text-decoration:underline">字体版</a>。
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部固定导航：符铺项同时是回到首页 index.html 的入口 -->
+    <nav class="ldr_tabbar" aria-label="掌上符铺底部导航">
+        <a class="ldr_tab" href="./index.html" aria-current="page">
+            <span class="ldr_tico"><i data-lucide="house"></i></span>
+            <span class="ldr_tlabel">符铺</span>
+        </a>
+        <a class="ldr_tab" href="#ldr_shelf">
+            <span class="ldr_tico"><svg class="ldr_sym"><use href="#icon-niuyouguo"></use></svg></span>
+            <span class="ldr_tlabel">鲜果</span>
+        </a>
+        <a class="ldr_tab" href="#ldr_shelf">
+            <span class="ldr_tico"><svg class="ldr_sym"><use href="#icon-dengpao"></use></svg><span class="ldr_dot" aria-hidden="true"></span></span>
+            <span class="ldr_tlabel">灵感</span>
+        </a>
+        <a class="ldr_tab ldr_tab-bag" href="#ldr_shelf">
+            <span class="ldr_tico"><i data-lucide="shopping-basket"></i><b class="ldr_badge" id="ldr_bagbadge" aria-label="符袋内有 3 件">3</b></span>
+            <span class="ldr_tlabel">符袋</span>
+        </a>
+    </nav>
+
+    <script>
+        (function () {
+            // 渲染 Lucide 线稿
+            lucide.createIcons();
+
+            var ldr_tabs = document.querySelectorAll('.ldr_tabbar .ldr_tab');
+            var ldr_badge = document.getElementById('ldr_bagbadge');
+            var ldr_count = parseInt(ldr_badge.textContent, 10) || 0;
+
+            ldr_tabs.forEach(function (ldr_tab) {
+                ldr_tab.addEventListener('click', function (ldr_ev) {
+                    if (ldr_tab.getAttribute('href') === './index.html') return;
+                    ldr_ev.preventDefault();
+
+                    ldr_tabs.forEach(function (ldr_t) { ldr_t.removeAttribute('aria-current'); });
+                    ldr_tab.setAttribute('aria-current', 'page');
+
+                    if (ldr_tab.classList.contains('ldr_tab-bag')) {
+                        ldr_count = Math.min(ldr_count + 1, 99);
+                        ldr_badge.textContent = ldr_count >= 99 ? '99+' : ldr_count;
+                        ldr_badge.setAttribute('aria-label', '符袋内有 ' + ldr_count + ' 件');
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

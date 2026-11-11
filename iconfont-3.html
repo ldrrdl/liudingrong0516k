@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="符造局·掌上符铺 — 移动端底部固定导航（字体图标版）：本地 iconfont 字体 + Font Awesome，含数字徽章与红点">
+    <title>掌上符铺 · 字体图标 — 符造局</title>
+    <link rel="stylesheet" href="./font/iconfont.css">
+    <link rel="stylesheet" href="./cdn/css/all.min.css">
+    <style>
+        :root {
+            --ldr-ink: #211D18;
+            --ldr-paper: #F3EEE3;
+            --ldr-card: #FAF6EC;
+            --ldr-seal: #C3272B;
+            --ldr-alert: #E5484D;
+            --ldr-fade: #8A8175;
+            --ldr-line: rgba(33, 29, 24, .28);
+            --ldr-nav-h: 58px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background-color: var(--ldr-paper);
+            background-image:
+                linear-gradient(rgba(33, 29, 24, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(33, 29, 24, .05) 1px, transparent 1px);
+            background-size: 28px 28px;
+            color: var(--ldr-ink);
+            line-height: 1.7;
+            /* 给固定底导航留出滚动空间 */
+            padding-bottom: calc(var(--ldr-nav-h) + env(safe-area-inset-bottom) + 24px);
+        }
+
+        a { color: inherit; text-decoration: none; }
+        a:focus-visible { outline: 3px solid var(--ldr-seal); outline-offset: 2px; }
+
+        /* ===== 顶部品牌栏（与符造局系列一致） ===== */
+        .ldr_sitehead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 16px clamp(16px, 5vw, 40px);
+            border-bottom: 2px solid var(--ldr-ink);
+            background: var(--ldr-paper);
+        }
+
+        .ldr_brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: .08em;
+        }
+
+        .ldr_brandmark {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            background: var(--ldr-ink);
+            color: var(--ldr-paper);
+            font-size: 20px;
+        }
+
+        .ldr_brand em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 10px;
+            letter-spacing: .3em;
+            color: var(--ldr-fade);
+        }
+
+        .ldr_series { font-size: 13px; color: var(--ldr-fade); display: flex; gap: 16px; }
+        .ldr_series a:hover { color: var(--ldr-seal); }
+
+        /* ===== 页面主体：移动商店内容 ===== */
+        .ldr_main { max-width: 640px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 40px); }
+
+        .ldr_hero { padding: clamp(28px, 6vw, 48px) 0 18px; }
+
+        .ldr_hero h1 {
+            font-size: clamp(32px, 7vw, 44px);
+            font-weight: 900;
+            letter-spacing: .1em;
+            line-height: 1.2;
+        }
+
+        .ldr_hero h1 small {
+            display: block;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            font-weight: 400;
+            letter-spacing: .26em;
+            color: var(--ldr-seal);
+            margin-top: 6px;
+        }
+
+        .ldr_lede { margin-top: 12px; font-size: 15px; color: #4A443B; max-width: 34em; }
+        .ldr_lede strong { color: var(--ldr-seal); }
+
+        .ldr_specs {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 22px;
+            margin-top: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-card);
+            font-size: 12.5px;
+            color: var(--ldr-fade);
+        }
+
+        .ldr_specs b { color: var(--ldr-ink); font-weight: 700; margin-right: 4px; }
+
+        /* ---- 货架 ---- */
+        .ldr_shelf { padding: 26px 0 10px; }
+
+        .ldr_shelfhead {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--ldr-ink);
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+        }
+
+        .ldr_shelfhead h2 { font-size: 20px; font-weight: 900; letter-spacing: .12em; }
+        .ldr_shelfhead h2::before { content: "■"; color: var(--ldr-seal); font-size: 12px; margin-right: 8px; vertical-align: 2px; }
+        .ldr_shelfhead small { font-size: 11px; letter-spacing: .2em; color: var(--ldr-fade); }
+
+        .ldr_goods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .ldr_item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid var(--ldr-line);
+            background: var(--ldr-card);
+            padding: 16px 14px 12px;
+        }
+
+        .ldr_pic {
+            display: grid;
+            place-items: center;
+            height: 76px;
+            font-size: 44px;
+        }
+
+        .ldr_item h3 { font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+        .ldr_price { font-size: 13px; color: var(--ldr-seal); font-weight: 700; }
+        .ldr_price small { color: var(--ldr-fade); font-weight: 400; margin-left: 6px; font-size: 11px; }
+
+        .ldr_note {
+            margin: 22px 0 10px;
+            border-left: 5px solid var(--ldr-seal);
+            background: var(--ldr-ink);
+            color: #E8E0CE;
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+
+        .ldr_note b { color: var(--ldr-paper); }
+
+        .ldr_footinfo {
+            border-top: 2px solid var(--ldr-ink);
+            margin-top: 22px;
+            padding: 14px 0 20px;
+            font-size: 12.5px;
+            color: var(--ldr-fade);
+        }
+
+        /* ===== 底部固定导航：四项均分自适应宽度 ===== */
+        .ldr_tabbar {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            margin: 0 auto;
+            max-width: 560px;
+            height: calc(var(--ldr-nav-h) + env(safe-area-inset-bottom));
+            padding-bottom: env(safe-area-inset-bottom);
+            display: flex;
+            background: var(--ldr-card);
+            border-top: 2px solid var(--ldr-ink);
+            box-shadow: 0 -6px 18px rgba(33, 29, 24, .10);
+        }
+
+        /* 宽屏下呈现手机组件质感 */
+        @media (min-width: 600px) {
+            .ldr_tabbar {
+                border: 2px solid var(--ldr-ink);
+                border-bottom: none;
+                border-radius: 14px 14px 0 0;
+            }
+        }
+
+        .ldr_tab {
+            flex: 1;                       /* 自适应宽度：四项均分 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            color: var(--ldr-fade);
+            font-size: 12px;
+            transition: color .18s ease;
+        }
+
+        .ldr_tico {
+            position: relative;
+            display: grid;
+            place-items: center;
+            height: 26px;
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .ldr_tico .iconfont { font-size: 24px; }
+
+        .ldr_tlabel { letter-spacing: .08em; }
+
+        .ldr_tab[aria-current="page"] { color: var(--ldr-ink); font-weight: 700; }
+        .ldr_tab[aria-current="page"] .ldr_tico {
+            color: var(--ldr-seal);
+        }
+        .ldr_tab[aria-current="page"]::after {
+            content: "";
+            width: 18px;
+            height: 3px;
+            background: var(--ldr-seal);
+            position: absolute;
+            top: -2px;
+        }
+        .ldr_tab:hover { color: var(--ldr-ink); }
+
+        /* ---- 徽章：数字徽章 与 红点（图标右上角） ---- */
+        .ldr_badge {
+            position: absolute;
+            top: -8px;
+            left: calc(50% + 4px);
+            min-width: 17px;
+            height: 17px;
+            padding: 0 5px;
+            border-radius: 9px;
+            background: var(--ldr-alert);
+            color: #FFF7EC;
+            font-size: 10.5px;
+            font-weight: 700;
+            line-height: 17px;
+            text-align: center;
+            font-family: "Segoe UI", Arial, sans-serif;
+            letter-spacing: 0;
+        }
+
+        .ldr_dot {
+            position: absolute;
+            top: -3px;
+            left: calc(50% + 7px);
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--ldr-alert);
+            box-shadow: 0 0 0 2px var(--ldr-card);
+        }
+
+        @media (max-width: 400px) {
+            .ldr_goods { grid-template-columns: 1fr; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ldr_sitehead">
+        <a class="ldr_brand" href="./index.html">
+            <span class="ldr_brandmark">符</span>
+            <span>符造局<em>GLYPHWORKS</em></span>
+        </a>
+        <nav class="ldr_series" aria-label="系列页面">
+            <a href="./iconfont-1.html">铸字间</a>
+            <a href="./iconfont-2.html">绘图室</a>
+            <a href="./iconfont-4.html">SVG 版</a>
+        </nav>
+    </header>
+
+    <main class="ldr_main">
+        <section class="ldr_hero">
+            <h1>掌上符铺<small>MOBILE TABBAR / FONT GLYPHS</small></h1>
+            <p class="ldr_lede">把符铺装进拇指的范围。底部一条<strong>固定导航</strong>，四项均分宽度，
+                图标一律以<strong>字体</strong>的方式排出来 —— 字形跟着文字颜色走，一枚墨色到底。</p>
+            <ul class="ldr_specs">
+                <li><b>定位</b>position: fixed 贴底悬浮</li>
+                <li><b>宽度</b>flex 均分 · 随视口自适应</li>
+                <li><b>提醒</b>数字徽章 ×1 · 红点 ×1</li>
+                <li><b>图标</b>本地 iconfont 字体 ×2 + Font Awesome ×2</li>
+            </ul>
+        </section>
+
+        <section class="ldr_shelf" id="ldr_shelf" aria-labelledby="ldr-shelf-title">
+            <div class="ldr_shelfhead">
+                <h2 id="ldr-shelf-title">今日货架</h2>
+                <small>ON SHELF</small>
+            </div>
+            <div class="ldr_goods">
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i class="iconfont icon-niuyouguo"></i></div>
+                    <h3>牛油果符牌 · 青玉</h3>
+                    <p class="ldr_price">¥88<small>镇铺之宝</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i class="iconfont icon-dengpao"></i></div>
+                    <h3>灯泡形镇纸 · 琥珀</h3>
+                    <p class="ldr_price">¥45<small>手作</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i class="fa-solid fa-house"></i></div>
+                    <h3>屋形印盒 · 桃心木</h3>
+                    <p class="ldr_price">¥66<small>限量</small></p>
+                </article>
+                <article class="ldr_item">
+                    <div class="ldr_pic" aria-hidden="true"><i class="fa-solid fa-basket-shopping"></i></div>
+                    <h3>提篮香插 · 竹</h3>
+                    <p class="ldr_price">¥32<small>现货</small></p>
+                </article>
+            </div>
+            <p class="ldr_note">试一试：点「符袋」，右上角的<b>数字徽章</b>会加一，攒到 99 就封顶；「灵感」头顶的<b>红点</b>在等你点开。</p>
+            <div class="ldr_footinfo">
+                符造局 GLYPHWORKS · 24002120516 刘丁荣 · 高级网页设计<br>
+                字体图标为单色字形，跟随文字颜色；多色版本请看 <a href="./iconfont-4.html" style="text-decoration:underline">SVG 版</a>。
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部固定导航：符铺项同时是回到首页 index.html 的入口 -->
+    <nav class="ldr_tabbar" aria-label="掌上符铺底部导航">
+        <a class="ldr_tab" href="./index.html" aria-current="page">
+            <span class="ldr_tico"><i class="fa-solid fa-house"></i></span>
+            <span class="ldr_tlabel">符铺</span>
+        </a>
+        <a class="ldr_tab" href="#ldr_shelf">
+            <span class="ldr_tico"><i class="iconfont icon-niuyouguo"></i></span>
+            <span class="ldr_tlabel">鲜果</span>
+        </a>
+        <a class="ldr_tab" href="#ldr_shelf">
+            <span class="ldr_tico"><i class="iconfont icon-dengpao"></i><span class="ldr_dot" aria-hidden="true"></span></span>
+            <span class="ldr_tlabel">灵感</span>
+        </a>
+        <a class="ldr_tab ldr_tab-bag" href="#ldr_shelf">
+            <span class="ldr_tico"><i class="fa-solid fa-basket-shopping"></i><b class="ldr_badge" id="ldr_bagbadge" aria-label="符袋内有 3 件">3</b></span>
+            <span class="ldr_tlabel">符袋</span>
+        </a>
+    </nav>
+
+    <script>
+        (function () {
+            var ldr_tabs = document.querySelectorAll('.ldr_tabbar .ldr_tab');
+            var ldr_badge = document.getElementById('ldr_bagbadge');
+            var ldr_count = parseInt(ldr_badge.textContent, 10) || 0;
+
+            ldr_tabs.forEach(function (ldr_tab) {
+                ldr_tab.addEventListener('click', function (ldr_ev) {
+                    // 「符铺」是回首页的真实链接，不拦截
+                    if (ldr_tab.getAttribute('href') === './index.html') return;
+                    ldr_ev.preventDefault();
+
+                    ldr_tabs.forEach(function (ldr_t) { ldr_t.removeAttribute('aria-current'); });
+                    ldr_tab.setAttribute('aria-current', 'page');
+
+                    // 点符袋：数字徽章 +1，封顶 99+
+                    if (ldr_tab.classList.contains('ldr_tab-bag')) {
+                        ldr_count = Math.min(ldr_count + 1, 99);
+                        ldr_badge.textContent = ldr_count >= 99 ? '99+' : ldr_count;
+                        ldr_badge.setAttribute('aria-label', '符袋内有 ' + ldr_count + ' 件');
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

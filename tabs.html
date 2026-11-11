@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    作者: 刘丁荣
+    建立时间: 2026-11-04 13:42
+    使用大模型: GLM-5.3-Flash
+    功能名称: 新闻选项卡页 —— 四栏目选项卡（国内/省内/国际/最热），JS 外部引用、组件可复用
+  -->
+  <title>要闻速览 · 选项卡 | 符造局 GLYPHWORKS</title>
+  <style>
+    /* ===== 设计令牌：档案夹标签页（tab 的词源即文件夹标签） ===== */
+    :root {
+      --ldr-desk: #2a343e;      /* 桌面深青灰 */
+      --ldr-paper: #fafbfd;     /* 纸面冷白 */
+      --ldr-ink: #22303c;       /* 正文墨色 */
+      --ldr-navy: #1d3a5f;      /* 普鲁士蓝 */
+      --ldr-red: #c4402f;       /* 新闻红 */
+      --ldr-hot: #e3a93c;       /* 热度记号黄 */
+      --ldr-line: #d8dfe7;      /* 纸面细线 */
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--ldr-desk);
+      background-image: radial-gradient(ellipse at 50% -20%, rgba(255,255,255,.06), transparent 60%);
+      color: var(--ldr-ink);
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      line-height: 1.7;
+      padding: 24px 16px 48px;
+      min-height: 100vh;
+    }
+
+    .ldr_wrap { max-width: 760px; margin: 0 auto; }
+
+    /* ===== 报头 ===== */
+    .ldr_masthead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: #e8edf3;
+      margin-bottom: 22px;
+    }
+    .ldr_masthead h1 {
+      font-family: "Source Han Serif SC", "Noto Serif SC", "SimSun", serif;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+    .ldr_masthead h1 span { color: var(--ldr-hot); }
+    .ldr_home {
+      color: #aebbc9;
+      text-decoration: none;
+      border-bottom: 1px solid #5a6a79;
+      padding-bottom: 2px;
+      font-size: 14px;
+    }
+    .ldr_home:hover { color: #fff; border-color: #fff; }
+    .ldr_home:focus-visible, .ldr_tab:focus-visible {
+      outline: 2px solid var(--ldr-hot);
+      outline-offset: 3px;
+    }
+
+    /* ===== 档案夹：标签行 ===== */
+    .ldr_tabbar {
+      display: flex;
+      gap: 6px;
+      padding: 0 18px;
+      position: relative;
+      z-index: 2;
+    }
+    .ldr_tab {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font: inherit;
+      font-size: 15px;
+      letter-spacing: 1px;
+      padding: 10px 18px 12px;
+      border-radius: 9px 9px 0 0;
+      background: #39454f;
+      color: #aebbc9;
+      position: relative;
+      transition: background .15s, color .15s, transform .15s;
+    }
+    .ldr_tab:hover { background: #45525d; color: #e8edf3; transform: translateY(-2px); }
+    .ldr_tab--active {
+      background: var(--ldr-paper);
+      color: var(--ldr-navy);
+      font-weight: 700;
+      transform: translateY(-2px);
+    }
+    .ldr_tab--active::after {           /* 标签与纸面连为一体的接缝 */
+      content: "";
+      position: absolute;
+      left: 0; right: 0; bottom: -2px;
+      height: 4px;
+      background: var(--ldr-paper);
+    }
+    .ldr_tab .ldr_tabmark {             /* 「最热」角标 */
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 11px;
+      line-height: 1;
+      padding: 3px 6px;
+      border-radius: 3px;
+      background: var(--ldr-hot);
+      color: #4a3408;
+      font-weight: 700;
+      vertical-align: 2px;
+    }
+    .ldr_tab--active .ldr_tabmark { background: var(--ldr-red); color: #fff; }
+
+    /* ===== 档案夹：纸面与面板 ===== */
+    .ldr_folder {
+      background: var(--ldr-paper);
+      border-radius: 0 12px 12px 12px;
+      box-shadow: 0 24px 48px rgba(0,0,0,.35);
+      padding: 26px 30px 30px;
+      position: relative;
+      z-index: 1;
+    }
+    .ldr_panel[hidden] { display: none; }
+    .ldr_panel--active { animation: ldr_rise .22s ease-out; }
+    @keyframes ldr_rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .ldr_panel h2 {
+      font-family: "Source Han Serif SC", "Noto Serif SC", "SimSun", serif;
+      font-size: 22px;
+      color: var(--ldr-navy);
+      padding-bottom: 10px;
+      border-bottom: 3px solid var(--ldr-navy);
+      margin-bottom: 6px;
+    }
+    .ldr_panel h2 em { font-style: normal; color: var(--ldr-red); }
+
+    .ldr_item {
+      display: grid;
+      grid-template-columns: 92px 1fr;
+      gap: 14px;
+      padding: 14px 2px;
+      border-bottom: 1px solid var(--ldr-line);
+      align-items: baseline;
+    }
+    .ldr_item:last-child { border-bottom: none; }
+    .ldr_date { font-size: 13px; color: #8795a3; font-variant-numeric: tabular-nums; }
+    .ldr_headline { font-size: 16px; font-weight: 700; color: var(--ldr-ink); }
+    .ldr_headline a { color: inherit; text-decoration: none; }
+    .ldr_headline a:hover { color: var(--ldr-red); text-decoration: underline; text-underline-offset: 4px; }
+    .ldr_summary { font-size: 13.5px; color: #5b6b7a; margin-top: 2px; }
+    .ldr_rank {                        /* 热榜排名：真实序号 */
+      display: inline-grid;
+      place-items: center;
+      width: 22px; height: 22px;
+      margin-right: 8px;
+      border-radius: 4px;
+      background: #eef2f6;
+      color: var(--ldr-navy);
+      font-size: 13px;
+      font-weight: 700;
+      vertical-align: 1px;
+    }
+    .ldr_item--top .ldr_rank { background: var(--ldr-red); color: #fff; }
+
+    /* ===== 复用演示区（第二个实例） ===== */
+    .ldr_demo { margin-top: 30px; }
+    .ldr_demo-note {
+      color: #8fa0b0;
+      font-size: 13px;
+      margin: 0 0 10px 2px;
+    }
+    .ldr_tabs--mini .ldr_tabbar { padding: 0 12px; }
+    .ldr_tabs--mini .ldr_tab { font-size: 13px; padding: 7px 14px 9px; border-radius: 7px 7px 0 0; }
+    .ldr_tabs--mini .ldr_folder { padding: 16px 18px 18px; border-radius: 0 9px 9px 9px; box-shadow: 0 12px 26px rgba(0,0,0,.3); }
+    .ldr_tabs--mini .ldr_panel h2 { font-size: 17px; border-bottom-width: 2px; }
+    .ldr_tabs--mini .ldr_item { grid-template-columns: 78px 1fr; padding: 10px 2px; }
+    .ldr_tabs--mini .ldr_headline { font-size: 14px; font-weight: 600; }
+
+    /* ===== 页脚规格说明 ===== */
+    .ldr_spec {
+      margin-top: 26px;
+      color: #8fa0b0;
+      font-size: 13px;
+      border-top: 1px dashed #4a5866;
+      padding-top: 14px;
+    }
+    .ldr_spec code { color: #c9d6e2; background: #333f4a; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+    .ldr_footnav { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+    .ldr_footnav a { color: #aebbc9; text-decoration: none; font-size: 13px; }
+    .ldr_footnav a:hover { color: #fff; text-decoration: underline; text-underline-offset: 4px; }
+
+    @media (max-width: 560px) {
+      .ldr_tabbar { padding: 0 8px; gap: 4px; flex-wrap: wrap; }
+      .ldr_tab { padding: 8px 12px 10px; font-size: 14px; }
+      .ldr_folder { padding: 18px 16px 22px; }
+      .ldr_item { grid-template-columns: 1fr; gap: 2px; }
+      .ldr_masthead h1 { font-size: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ldr_panel--active { animation: none; }
+      .ldr_tab { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ldr_wrap">
+
+    <!-- 报头 -->
+    <header class="ldr_masthead">
+      <h1>要闻速览<span>·</span>四栏目</h1>
+      <nav aria-label="页面导航">
+        <a class="ldr_home" href="index.html">← 返回首页</a>
+      </nav>
+    </header>
+
+    <!-- 实例一：主新闻选项卡（国内新闻为默认选中） -->
+    <div class="ldr_tabs">
+      <div class="ldr_tabbar" role="tablist" aria-label="新闻栏目">
+        <button class="ldr_tab ldr_tab--active" role="tab" aria-selected="true"
+                data-ldr-panel="ldr_panel_cn" id="ldr_tab_cn">国内新闻</button>
+        <button class="ldr_tab" role="tab" aria-selected="false"
+                data-ldr-panel="ldr_panel_prov" id="ldr_tab_prov">省内新闻</button>
+        <button class="ldr_tab" role="tab" aria-selected="false"
+                data-ldr-panel="ldr_panel_world" id="ldr_tab_world">国际新闻</button>
+        <button class="ldr_tab" role="tab" aria-selected="false"
+                data-ldr-panel="ldr_panel_hot" id="ldr_tab_hot">最热新闻<span class="ldr_tabmark">HOT</span></button>
+      </div>
+
+      <div class="ldr_folder">
+        <!-- 国内新闻（默认面板） -->
+        <section class="ldr_panel ldr_panel--active" role="tabpanel" id="ldr_panel_cn" aria-labelledby="ldr_tab_cn">
+          <h2>国内新闻<em>要目</em></h2>
+          <div class="ldr_item">
+            <span class="ldr_date">11-04 09:20</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_cn">全国 5G 基站总数突破五百万个，实现县县通千兆</a></p>
+              <p class="ldr_summary">工信部发布最新数据，我国已建成全球规模最大的信息通信网络。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-03 18:05</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_cn">新版个人信息保护规范发布，App 违规收集将重点整治</a></p>
+              <p class="ldr_summary">专项整治行动自本月起分三批推进，覆盖网购、出行等高频场景。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-02 11:40</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_cn">全国铁路实行新运行图，京沪高铁最快四小时十八分</a></p>
+              <p class="ldr_summary">新图新增复兴号智能动车组列车 62 对，惠及京津冀与长三角。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 省内新闻 -->
+        <section class="ldr_panel" role="tabpanel" id="ldr_panel_prov" aria-labelledby="ldr_tab_prov" hidden>
+          <h2>省内新闻<em>速递</em></h2>
+          <div class="ldr_item">
+            <span class="ldr_date">11-04 10:15</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_prov">我省启动「数字工匠」培育计划，首批遴选二百名</a></p>
+              <p class="ldr_summary">聚焦智能制造与软件领域，入选者将获得专项经费与导师结对。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-03 16:30</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_prov">全省高校人工智能通识课程本学期全面开课</a></p>
+              <p class="ldr_summary">覆盖 78 所高校，线上课程资源向中小学生同步开放。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-01 08:50</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_prov">辽河生态廊道三期工程完工，新增滨水绿道四十公里</a></p>
+              <p class="ldr_summary">沿岸设 12 处观鸟平台，预计年内向市民全部开放。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 国际新闻 -->
+        <section class="ldr_panel" role="tabpanel" id="ldr_panel_world" aria-labelledby="ldr_tab_world" hidden>
+          <h2>国际新闻<em>瞭望</em></h2>
+          <div class="ldr_item">
+            <span class="ldr_date">11-04 07:30</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_world">联合国气候大会就新一轮减排目标达成框架协议</a></p>
+              <p class="ldr_summary">与会各方同意 2032 年前建立统一碳核算口径，细节明年敲定。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-03 21:10</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_world">多国联合启动深海生物多样性普查计划</a></p>
+              <p class="ldr_summary">首支科考船队已在太平洋暖池布放 30 台深潜观测设备。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">11-02 14:25</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_world">国际空间站完成第一百次舱段对接任务</a></p>
+              <p class="ldr_summary">本次对接刷新自动交会对接用时最短纪录，全程 3 小时 12 分。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 最热新闻（热榜：编号是真实序列） -->
+        <section class="ldr_panel" role="tabpanel" id="ldr_panel_hot" aria-labelledby="ldr_tab_hot" hidden>
+          <h2>最热新闻<em>热榜</em></h2>
+          <div class="ldr_item ldr_item--top">
+            <span class="ldr_date">热度 1.2亿</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_hot"><span class="ldr_rank">1</span>神舟二十一号乘组将首次在轨跨年</a></p>
+              <p class="ldr_summary">三名航天员状态良好，空间站已挂起新年装饰，网友在线许愿。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">热度 8630万</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_hot"><span class="ldr_rank">2</span>AI 生成内容标识办法正式实施</a></p>
+              <p class="ldr_summary">发布平台须为合成内容添加显式水印，违规账号将被限流处置。</p>
+            </div>
+          </div>
+          <div class="ldr_item">
+            <span class="ldr_date">热度 5210万</span>
+            <div>
+              <p class="ldr_headline"><a href="#ldr_panel_hot"><span class="ldr_rank">3</span>全国多地初雪提前，雾凇观赏地图上线</a></p>
+              <p class="ldr_summary">气象部门预计本周末将迎来今冬首个最佳观赏窗口期。</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- 实例二：复用演示 —— 同一个 tabs.js 驱动的小号选项卡 -->
+    <div class="ldr_demo">
+      <p class="ldr_demo-note">复用演示：下面是同一份 js/tabs.js 驱动的第二个实例（ldr_initTabs 支持任意容器）</p>
+      <div class="ldr_tabs ldr_tabs--mini">
+        <div class="ldr_tabbar" role="tablist" aria-label="校园栏目">
+          <button class="ldr_tab ldr_tab--active" role="tab" aria-selected="true"
+                  data-ldr-panel="ldr_panel_campus" id="ldr_tab_campus">校园快讯</button>
+          <button class="ldr_tab" role="tab" aria-selected="false"
+                  data-ldr-panel="ldr_panel_notice" id="ldr_tab_notice">通知公告</button>
+        </div>
+        <div class="ldr_folder">
+          <section class="ldr_panel ldr_panel--active" role="tabpanel" id="ldr_panel_campus" aria-labelledby="ldr_tab_campus">
+            <h2>校园快讯</h2>
+            <div class="ldr_item">
+              <span class="ldr_date">11-04</span>
+              <div><p class="ldr_headline"><a href="#ldr_panel_campus">网页设计课程作品展开始征集，截止本月 20 日</a></p></div>
+            </div>
+            <div class="ldr_item">
+              <span class="ldr_date">11-02</span>
+              <div><p class="ldr_headline"><a href="#ldr_panel_campus">图书馆新增自习座位预约系统，试运行一周</a></p></div>
+            </div>
+          </section>
+          <section class="ldr_panel" role="tabpanel" id="ldr_panel_notice" aria-labelledby="ldr_tab_notice" hidden>
+            <h2>通知公告</h2>
+            <div class="ldr_item">
+              <span class="ldr_date">11-03</span>
+              <div><p class="ldr_headline"><a href="#ldr_panel_notice">关于评选本学期「优秀课程作业」的通知</a></p></div>
+            </div>
+            <div class="ldr_item">
+              <span class="ldr_date">10-31</span>
+              <div><p class="ldr_headline"><a href="#ldr_panel_notice">冬季作息时间表调整：早自习顺延十分钟</a></p></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <!-- 规格说明与全站导航 -->
+    <footer class="ldr_spec">
+      <p>JS 外部引用：<code>&lt;script src="js/tabs.js"&gt;&lt;/script&gt;</code> —— 切换流程：绑定监听事件 → <b>先清除所有选项卡的选中状态</b> → <b>再设置当前元素的选中状态</b>；组件支持同页多实例复用与左右方向键切换。</p>
+      <nav class="ldr_footnav" aria-label="全站页面">
+        <a href="index.html">首页</a>
+        <a href="iconfont-1.html">铸字间 · 字体图标</a>
+        <a href="iconfont-2.html">绘图室 · SVG 图标</a>
+        <a href="iconfont-3.html">移动导航 · 字体图标</a>
+        <a href="iconfont-4.html">移动导航 · SVG</a>
+      </nav>
+    </footer>
+
+  </div>
+
+  <!-- 外部引用可复用选项卡脚本 -->
+  <script src="js/tabs.js"></script>
+</body>
+</html>

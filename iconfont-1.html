@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="符造局·铸字间 — 以字体形式存在的图标，Font Awesome 字体图标字谱">
+    <title>铸字间 · 字体图标 — 符造局</title>
+    <link rel="stylesheet" href="./cdn/css/all.min.css">
+    <style>
+        :root {
+            --ldr-ink: #211D18;
+            --ldr-paper: #F3EEE3;
+            --ldr-card: #FAF6EC;
+            --ldr-seal: #C3272B;
+            --ldr-fade: #8A8175;
+            --ldr-line: rgba(33, 29, 24, .28);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            background-color: var(--ldr-paper);
+            background-image:
+                linear-gradient(rgba(33, 29, 24, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(33, 29, 24, .05) 1px, transparent 1px);
+            background-size: 28px 28px;
+            color: var(--ldr-ink);
+            line-height: 1.7;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 3px solid var(--ldr-seal);
+            outline-offset: 2px;
+        }
+
+        /* ===== 顶部品牌栏 ===== */
+        .ldr_sitehead {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 18px clamp(20px, 6vw, 72px);
+            border-bottom: 2px solid var(--ldr-ink);
+            background: var(--ldr-paper);
+        }
+
+        .ldr_brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: .08em;
+        }
+
+        .ldr_brandmark {
+            display: grid;
+            place-items: center;
+            width: 38px;
+            height: 38px;
+            background: var(--ldr-ink);
+            color: var(--ldr-paper);
+            font-size: 22px;
+        }
+
+        .ldr_brand em {
+            font-style: normal;
+            font-weight: 400;
+            font-size: 11px;
+            letter-spacing: .34em;
+            color: var(--ldr-fade);
+            margin-left: 2px;
+        }
+
+        .ldr_nav { display: flex; gap: clamp(14px, 3vw, 34px); font-size: 15px; }
+
+        .ldr_nav a {
+            padding: 4px 2px;
+            border-bottom: 3px solid transparent;
+            color: var(--ldr-fade);
+        }
+
+        .ldr_nav a:hover { color: var(--ldr-ink); border-bottom-color: var(--ldr-line); }
+        .ldr_nav a[aria-current="page"] { color: var(--ldr-ink); font-weight: 700; border-bottom-color: var(--ldr-seal); }
+
+        /* ===== 主区 ===== */
+        .ldr_main { max-width: 1120px; margin: 0 auto; padding: 0 clamp(20px, 6vw, 72px); }
+
+        /* ---- 首屏：米字格 + 文案 ---- */
+        .ldr_hero {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: clamp(28px, 6vw, 72px);
+            align-items: center;
+            padding: clamp(40px, 8vw, 88px) 0 clamp(32px, 6vw, 64px);
+        }
+
+        .ldr_migrid {
+            position: relative;
+            width: clamp(180px, 26vw, 240px);
+            aspect-ratio: 1;
+            border: 4px solid var(--ldr-ink);
+            background: var(--ldr-card);
+            box-shadow: 8px 8px 0 rgba(33, 29, 24, .12);
+        }
+
+        .ldr_migrid::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(to right, transparent calc(50% - .5px), rgba(195, 39, 43, .38) calc(50% - .5px), rgba(195, 39, 43, .38) calc(50% + .5px), transparent calc(50% + .5px)),
+                linear-gradient(to bottom, transparent calc(50% - .5px), rgba(195, 39, 43, .38) calc(50% - .5px), rgba(195, 39, 43, .38) calc(50% + .5px), transparent calc(50% + .5px)),
+                linear-gradient(45deg, transparent calc(50% - .5px), rgba(195, 39, 43, .30) calc(50% - .5px), rgba(195, 39, 43, .30) calc(50% + .5px), transparent calc(50% + .5px)),
+                linear-gradient(-45deg, transparent calc(50% - .5px), rgba(195, 39, 43, .30) calc(50% - .5px), rgba(195, 39, 43, .30) calc(50% + .5px), transparent calc(50% + .5px));
+        }
+
+        .ldr_migrid span {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: clamp(96px, 14vw, 128px);
+            font-weight: 900;
+            font-family: "SimSun", "Songti SC", serif;
+        }
+
+        .ldr_hero h1 {
+            font-size: clamp(44px, 7vw, 76px);
+            font-weight: 900;
+            letter-spacing: .1em;
+            line-height: 1.15;
+        }
+
+        .ldr_lede { margin-top: 14px; max-width: 34em; color: #4A443B; font-size: 16px; }
+        .ldr_lede strong { color: var(--ldr-seal); }
+
+        .ldr_facts {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0 clamp(28px, 5vw, 56px);
+            margin-top: 26px;
+            padding-top: 18px;
+            border-top: 1px solid var(--ldr-line);
+        }
+
+        .ldr_facts span { display: block; font-size: 12px; color: var(--ldr-fade); letter-spacing: .2em; }
+        .ldr_facts strong { font-size: 16px; letter-spacing: .04em; }
+
+        /* ---- 用法代码条 ---- */
+        .ldr_usage {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--ldr-ink);
+            border-left: 6px solid var(--ldr-seal);
+            padding: 14px 20px;
+            margin-bottom: clamp(40px, 7vw, 72px);
+        }
+
+        .ldr_usage b {
+            color: var(--ldr-paper);
+            font-weight: 400;
+            font-size: 11px;
+            letter-spacing: .26em;
+            white-space: nowrap;
+        }
+
+        .ldr_usage code {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 14px;
+            color: #E8E0CE;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+
+        .ldr_usage code i { color: var(--ldr-seal); font-style: normal; }
+
+        /* ---- 字盘分区 ---- */
+        .ldr_case { padding-bottom: clamp(40px, 7vw, 72px); }
+
+        .ldr_casehead {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--ldr-ink);
+            padding-bottom: 10px;
+        }
+
+        .ldr_casehead h2 { font-size: 26px; font-weight: 900; letter-spacing: .1em; }
+        .ldr_casehead h2::before { content: "■"; color: var(--ldr-seal); font-size: 14px; margin-right: 10px; vertical-align: 3px; }
+        .ldr_casehead small { font-family: Consolas, monospace; font-size: 12px; letter-spacing: .22em; color: var(--ldr-fade); }
+
+        .ldr_tray {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+            border-top: 1px solid var(--ldr-line);
+            border-left: 1px solid var(--ldr-line);
+        }
+
+        .ldr_cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            border-right: 1px solid var(--ldr-line);
+            border-bottom: 1px solid var(--ldr-line);
+            background: var(--ldr-card);
+            transition: background-color .18s ease, color .18s ease;
+        }
+
+        .ldr_glyph { display: grid; place-items: center; font-size: 30px; }
+        .ldr_code { font-family: Consolas, monospace; font-size: 11px; letter-spacing: .08em; color: var(--ldr-fade); }
+        .ldr_code b { font-family: "Microsoft YaHei", sans-serif; font-weight: 400; font-size: 12px; margin-right: 6px; }
+
+        .ldr_cell:hover, .ldr_cell:focus-within { background: var(--ldr-ink); color: var(--ldr-paper); }
+        .ldr_cell:hover .ldr_code, .ldr_cell:focus-within .ldr_code { color: #D9A79A; }
+
+        /* ===== 页脚 ===== */
+        .ldr_footer {
+            border-top: 2px solid var(--ldr-ink);
+            padding: 22px clamp(20px, 6vw, 72px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--ldr-fade);
+        }
+
+        .ldr_footer nav { display: flex; gap: 20px; }
+        .ldr_footer nav a:hover { color: var(--ldr-seal); }
+        .ldr_footer nav a[aria-current="page"] { color: var(--ldr-ink); font-weight: 700; }
+
+        @media (max-width: 720px) {
+            .ldr_hero { grid-template-columns: 1fr; }
+            .ldr_migrid { width: min(200px, 52vw); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ldr_sitehead">
+        <a class="ldr_brand" href="./index.html">
+            <span class="ldr_brandmark">符</span>
+            <span>符造局<em>GLYPHWORKS</em></span>
+        </a>
+        <nav class="ldr_nav" aria-label="站点导航">
+            <a href="./index.html">首页</a>
+            <a href="./iconfont-1.html" aria-current="page">铸字间</a>
+            <a href="./iconfont-2.html">绘图室</a>
+        </nav>
+    </header>
+
+    <main class="ldr_main">
+        <section class="ldr_hero">
+            <div class="ldr_migrid" aria-hidden="true"><span>符</span></div>
+            <div>
+                <h1>铸字间</h1>
+                <p class="ldr_lede">在这里，图标以<strong>字</strong>的形式存在。每一枚图形都是字体文件里的一个字形，
+                    住在一个专属的 Unicode 码位上 —— 写下一个类名，就是排下一个字。</p>
+                <ul class="ldr_facts">
+                    <li><span>载 体</span><strong>WOFF2 字体文件</strong></li>
+                    <li><span>调用方式</span><strong>类名 → 码位</strong></li>
+                    <li><span>在库字形</span><strong>28 枚</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="ldr_usage">
+            <b>用 法</b>
+            <code>&lt;i class="<i>fa-solid fa-house</i>"&gt;&lt;/i&gt; &nbsp;&rarr;&nbsp; 浏览器把字形 f015 排进这一行</code>
+        </div>
+
+        <section class="ldr_case" aria-labelledby="ldr-title-solid">
+            <div class="ldr_casehead">
+                <h2 id="ldr-title-solid">实心字形</h2>
+                <small>SOLID / 20 GLYPHS</small>
+            </div>
+            <div class="ldr_tray" id="ldr_tray_solid">
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-house"></i></span><figcaption class="ldr_code"><b>house</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-camera"></i></span><figcaption class="ldr_code"><b>camera</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-heart"></i></span><figcaption class="ldr_code"><b>heart</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-star"></i></span><figcaption class="ldr_code"><b>star</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-music"></i></span><figcaption class="ldr_code"><b>music</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-coffee"></i></span><figcaption class="ldr_code"><b>coffee</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-fire"></i></span><figcaption class="ldr_code"><b>fire</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-bolt"></i></span><figcaption class="ldr_code"><b>bolt</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-moon"></i></span><figcaption class="ldr_code"><b>moon</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-gem"></i></span><figcaption class="ldr_code"><b>gem</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-leaf"></i></span><figcaption class="ldr_code"><b>leaf</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-gift"></i></span><figcaption class="ldr_code"><b>gift</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-bell"></i></span><figcaption class="ldr_code"><b>bell</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-bookmark"></i></span><figcaption class="ldr_code"><b>bookmark</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-cloud"></i></span><figcaption class="ldr_code"><b>cloud</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-code"></i></span><figcaption class="ldr_code"><b>code</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-palette"></i></span><figcaption class="ldr_code"><b>palette</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-brush"></i></span><figcaption class="ldr_code"><b>brush</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-feather"></i></span><figcaption class="ldr_code"><b>feather</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-solid fa-umbrella"></i></span><figcaption class="ldr_code"><b>umbrella</b><span>—</span></figcaption></figure>
+            </div>
+        </section>
+
+        <section class="ldr_case" aria-labelledby="ldr-title-brands">
+            <div class="ldr_casehead">
+                <h2 id="ldr-title-brands">品牌字形</h2>
+                <small>BRANDS / 8 GLYPHS</small>
+            </div>
+            <div class="ldr_tray" id="ldr_tray_brands">
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-github"></i></span><figcaption class="ldr_code"><b>github</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-weibo"></i></span><figcaption class="ldr_code"><b>weibo</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-weixin"></i></span><figcaption class="ldr_code"><b>weixin</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-qq"></i></span><figcaption class="ldr_code"><b>qq</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-zhihu"></i></span><figcaption class="ldr_code"><b>zhihu</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-chrome"></i></span><figcaption class="ldr_code"><b>chrome</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-html5"></i></span><figcaption class="ldr_code"><b>html5</b><span>—</span></figcaption></figure>
+                <figure class="ldr_cell" tabindex="0"><span class="ldr_glyph"><i class="fa-brands fa-js"></i></span><figcaption class="ldr_code"><b>js</b><span>—</span></figcaption></figure>
+            </div>
+        </section>
+    </main>
+
+    <footer class="ldr_footer">
+        <p>符造局 GLYPHWORKS · 24002120516 刘丁荣 · 高级网页设计</p>
+        <nav aria-label="页脚导航">
+            <a href="./index.html">首页</a>
+            <a href="./iconfont-1.html" aria-current="page">铸字间</a>
+            <a href="./iconfont-2.html">绘图室</a>
+        </nav>
+    </footer>
+
+    <script>
+        // 读取每枚字形真实的 Unicode 码位：字体图标渲染后，::before 的 content 即码位字符
+        (function () {
+            var ldr_cells = document.querySelectorAll('.ldr_cell');
+            ldr_cells.forEach(function (ldr_cell) {
+                var ldr_icon = ldr_cell.querySelector('.ldr_glyph i');
+                var ldr_out = ldr_cell.querySelector('.ldr_code span');
+                if (!ldr_icon || !ldr_out) return;
+                var ldr_raw = (getComputedStyle(ldr_icon, '::before').content || '').replace(/"/g, '');
+                if (ldr_raw && ldr_raw !== 'none' && ldr_raw !== 'normal') {
+                    var ldr_cp = ldr_raw.codePointAt(0);
+                    if (ldr_cp >= 0xE000) {
+                        ldr_out.textContent = 'u' + ldr_cp.toString(16);
+                        return;
+                    }
+                }
+                ldr_out.textContent = '—';
+            });
+        })();
+    </script>
+</body>
+</html>
