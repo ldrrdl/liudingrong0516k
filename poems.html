@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!--
+  作者: 刘丁荣
+  建立时间: 2026-11-13 10:20
+  使用大模型: GLM-5.3-Flash
+  功能名称: 诗笺页面——上图下文卡片，通过本地 Express 服务器(3004)获取 db/db.json 中 poems 的图片、标题与内容
+-->
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>诗笺 · Poems</title>
+  <style>
+    :root {
+      --ldr-paper: #f6f2e8;
+      --ldr-ink: #2c2a26;
+      --ldr-vermilion: #b03a2e;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--ldr-paper);
+      color: var(--ldr-ink);
+      font-family: "Noto Serif SC", "Songti SC", SimSun, serif;
+      min-height: 100vh;
+    }
+    .ldr_header {
+      text-align: center;
+      padding: 48px 16px 28px;
+    }
+    .ldr_header h1 {
+      font-size: 34px;
+      letter-spacing: 12px;
+      text-indent: 12px;
+    }
+    .ldr_header .ldr_sub {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #8a8375;
+      letter-spacing: 3px;
+    }
+    .ldr_header .ldr_rule {
+      width: 56px;
+      height: 3px;
+      background: var(--ldr-vermilion);
+      margin: 18px auto 0;
+    }
+    .ldr_grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 28px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 28px 64px;
+    }
+    .ldr_card {
+      background: #fffdf8;
+      border: 1px solid #e5dfcf;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(60, 50, 30, 0.08);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .ldr_card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(60, 50, 30, 0.15);
+    }
+    .ldr_card img {
+      display: block;
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-bottom: 1px solid #e5dfcf;
+    }
+    .ldr_body { padding: 18px 20px 22px; }
+    .ldr_body h2 {
+      font-size: 19px;
+      letter-spacing: 4px;
+      color: var(--ldr-vermilion);
+    }
+    .ldr_body p {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.9;
+      color: #4a463e;
+    }
+    .ldr_tip {
+      text-align: center;
+      padding: 60px 16px;
+      color: #8a8375;
+      font-size: 14px;
+    }
+    .ldr_tip.ldr_err { color: var(--ldr-vermilion); }
+    .ldr_home {
+      display: block;
+      text-align: center;
+      padding-bottom: 40px;
+      color: #8a8375;
+      font-size: 13px;
+      text-decoration: none;
+      letter-spacing: 2px;
+    }
+    .ldr_home:hover { color: var(--ldr-vermilion); }
+  </style>
+</head>
+<body>
+  <header class="ldr_header">
+    <h1>诗 笺</h1>
+    <p class="ldr_sub">— POEMS · 上图下文 · 数据来自本地服务器 3004 —</p>
+    <div class="ldr_rule"></div>
+  </header>
+
+  <!-- 卡片网格：JS 从 /poems 接口渲染 -->
+  <main class="ldr_grid" id="ldrGrid"></main>
+  <p class="ldr_tip" id="ldrTip">正在从本地服务器获取诗句……</p>
+
+  <a class="ldr_home" href="index.html">« 返回课堂目录</a>
+
+  <script>
+    // 数据接口地址：指向 server.js 监听的 3004 端口（写明端口，双击打开页面也能请求到数据）
+    const ldr_API = 'http://localhost:3004/poems';
+
+    // 实现：请求本地服务器 /poems 接口，把 db.json 中 poems 数组渲染为上图下文卡片
+    async function ldr_loadPoems() {
+      const grid = document.getElementById('ldrGrid');
+      const tip = document.getElementById('ldrTip');
+      try {
+        const res = await fetch(ldr_API);
+        if (!res.ok) throw new Error('接口返回 ' + res.status);
+        const data = await res.json();
+        grid.innerHTML = data.poems.map(function (p) {
+          // 图片地址：相对路径自动补全为 3004 端口服务器的绝对地址
+          const pic = /^https?:\/\//.test(p.pic) ? p.pic : 'http://localhost:3004/' + p.pic;
+          return '<article class="ldr_card">'
+            + '<img src="' + pic + '" alt="' + p.title + '配图">'
+            + '<div class="ldr_body">'
+            + '<h2>' + p.title + '</h2>'
+            + '<p>' + p.content + '</p>'
+            + '</div></article>';
+        }).join('');
+        tip.style.display = 'none';
+      } catch (err) {
+        tip.textContent = '获取失败：' + err.message + '（请先在 db 目录运行 node server.js 启动 3004 端口服务器）';
+        tip.classList.add('ldr_err');
+      }
+    }
+    ldr_loadPoems();
+  </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!--
+    姓名: 刘丁荣
+    学号: 24002120516
+    建立时间: 2026-11-18 10:30
+    使用大模型: GLM-5.3-Flash
+    功能名称: 移动端手势滑动切换美食卡片（touchstart/touchend + 40px 阈值 + 冷却）
+  -->
+  <title>食指一动 · 手势切菜</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #1c1917; color: #fafaf9;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 20px;
+    }
+    .ldr_stage { width: 100%; max-width: 420px; }
+    /* 卡片容器：touch-action: pan-y 允许浏览器处理纵向滚动，横向手势留给 JS */
+    .ldr_cardwrap {
+      position: relative; height: 340px;
+      border-radius: 20px; overflow: hidden;
+      touch-action: pan-y;
+      cursor: grab; user-select: none; -webkit-user-select: none;
+      box-shadow: 0 18px 50px rgba(0,0,0,.45);
+    }
+    .ldr_cardwrap:active { cursor: grabbing; }
+    .ldr_card {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 28px 24px;
+      /* 0.3s 过渡动画：位置与透明度变化都平滑 */
+      transition: transform .3s ease, opacity .3s ease;
+    }
+    .ldr_num { position: absolute; top: 14px; right: 20px; font-size: 48px; font-weight: 800; opacity: .18; line-height: 1; }
+    .ldr_title { font-size: 26px; font-weight: 700; letter-spacing: 2px; text-shadow: 0 2px 8px rgba(0,0,0,.35); }
+    .ldr_desc { font-size: 14px; line-height: 1.75; opacity: .92; margin-top: 10px; text-shadow: 0 1px 6px rgba(0,0,0,.35); }
+    .ldr_page { margin-top: 18px; text-align: center; font-size: 14px; letter-spacing: 3px; color: #d6d3d1; }
+    .ldr_hint { margin-top: 12px; text-align: center; font-size: 13px; min-height: 18px; opacity: 0; transition: opacity .3s; color: #fb923c; }
+    .ldr_hint.ldr_show { opacity: 1; }
+    .ldr_tip { margin-top: 24px; font-size: 12px; color: #78716c; text-align: center; }
+    .ldr_back { display: block; margin-top: 10px; color: #a8a29e; font-size: 13px; text-align: center; text-decoration: none; }
+    .ldr_back:hover { color: #fafaf9; }
+  </style>
+</head>
+<body>
+  <div class="ldr_stage">
+    <div class="ldr_cardwrap" id="ldrWrap"></div>
+    <div class="ldr_page" id="ldrPage">第 1/4 张</div>
+    <div class="ldr_hint" id="ldrHint"></div>
+    <div class="ldr_tip">← 左滑下一张 · 右滑上一张 →（桌面可用鼠标拖拽）</div>
+    <a class="ldr_back" href="./index.html">&laquo; 返回课堂目录</a>
+  </div>
+
+  <script>
+    // 数据：4 道菜（菜名、简介、渐变背景）
+    var ldr_dishes = [
+      { name: "松鼠桂鱼", desc: "苏帮名菜，鱼身剞花刀炸定型，浇糖醋卤汁，形如松鼠、外脆里嫩。", bg: "linear-gradient(150deg,#0f766e,#134e4a 60%,#052e2b)" },
+      { name: "蟹酿橙",   desc: "南宋《山家清供》记载的风雅菜，蟹肉酿入橙盏蒸制，果香与蟹鲜相映。", bg: "linear-gradient(150deg,#c2410c,#7c2d12 55%,#431407)" },
+      { name: "葵花斩肉", desc: "唐代宫廷宴菜，狮子头的前身，肥瘦相间的肉丸炖至酥烂、入口即化。", bg: "linear-gradient(150deg,#be185d,#831843 55%,#500724)" },
+      { name: "樱桃毕罗", desc: "唐代著名点心，以樱桃入馅的精致面食，见于《烧尾宴食单》。", bg: "linear-gradient(150deg,#a16207,#713f12 55%,#422006)" }
+    ];
+
+    var ldr_idx = 0;          // 当前显示的卡片下标
+    var ldr_locked = false;   // 冷却锁：防止快速连滑一次跳两张
+    var ldr_startX = 0;       // 触摸起点 X
+    var ldr_startY = 0;       // 触摸起点 Y
+    var ldr_hintTimer = null; // 边界提示消失定时器
+
+    // 实现：根据菜品数据生成 4 张卡片并叠放在容器里
+    function ldr_buildCards() {
+      var wrap = document.getElementById("ldrWrap");
+      wrap.innerHTML = ldr_dishes.map(function (d, i) {
+        return '<div class="ldr_card" style="background:' + d.bg + '">'
+          + '<span class="ldr_num">0' + (i + 1) + '</span>'
+          + '<h2 class="ldr_title">' + d.name + '</h2>'
+          + '<p class="ldr_desc">' + d.desc + '</p>'
+          + '</div>';
+      }).join("");
+      ldr_apply();
+    }
+
+    // 实现：按当前下标给每张卡片分配位置（当前居中，左边移出左侧，右边移出右侧）
+    function ldr_apply() {
+      var cards = document.querySelectorAll("#ldrWrap .ldr_card");
+      cards.forEach(function (c, i) {
+        if (i === ldr_idx) { c.style.transform = "translateX(0)"; c.style.opacity = "1"; }
+        else if (i < ldr_idx) { c.style.transform = "translateX(-100%)"; c.style.opacity = "0"; }
+        else { c.style.transform = "translateX(100%)"; c.style.opacity = "0"; }
+      });
+      document.getElementById("ldrPage").textContent = "第 " + (ldr_idx + 1) + "/4 张";
+    }
+
+    // 实现：显示边界提示文字，1.5 秒后自动消失
+    function ldr_showHint(text) {
+      var h = document.getElementById("ldrHint");
+      h.textContent = text;
+      h.classList.add("ldr_show");
+      clearTimeout(ldr_hintTimer);
+      ldr_hintTimer = setTimeout(function () { h.classList.remove("ldr_show"); }, 1500);
+    }
+
+    // 实现：切换到下一张（左滑）；已是最后一张则提示
+    function ldr_next() {
+      if (ldr_locked) return;
+      if (ldr_idx >= ldr_dishes.length - 1) { ldr_showHint("已经是最后一张"); return; }
+      ldr_idx++;
+      ldr_apply();
+      ldr_lock();
+    }
+
+    // 实现：切换到上一张（右滑）；已是第一张则提示
+    function ldr_prev() {
+      if (ldr_locked) return;
+      if (ldr_idx <= 0) { ldr_showHint("已经是第一张"); return; }
+      ldr_idx--;
+      ldr_apply();
+      ldr_lock();
+    }
+
+    // 实现：300ms 冷却，防止快速连滑一次跳两张
+    function ldr_lock() {
+      ldr_locked = true;
+      setTimeout(function () { ldr_locked = false; }, 300);
+    }
+
+    // 实现：touchstart 记录起点坐标（changedTouches[0]）
+    function ldr_handleStart(e) {
+      ldr_startX = e.changedTouches[0].clientX;
+      ldr_startY = e.changedTouches[0].clientY;
+    }
+
+    // 实现：touchend 用 changedTouches[0] 计算横向位移，超过 40px 阈值判定滑动方向
+    function ldr_handleEnd(e) {
+      var dx = e.changedTouches[0].clientX - ldr_startX;
+      var dy = e.changedTouches[0].clientY - ldr_startY;
+      if (Math.abs(dx) < 40) return;               // 未达阈值，忽略
+      if (Math.abs(dx) < Math.abs(dy)) return;     // 纵向为主，交给页面滚动
+      if (dx < 0) { ldr_next(); } else { ldr_prev(); }
+    }
+
+    // 实现：桌面兜底——鼠标按下/抬起走同一套位移判定逻辑
+    var ldr_mouseDown = false;
+    function ldr_bindMouse() {
+      var wrap = document.getElementById("ldrWrap");
+      wrap.addEventListener("pointerdown", function (e) {
+        ldr_mouseDown = true; ldr_startX = e.clientX; ldr_startY = e.clientY;
+      });
+      wrap.addEventListener("pointerup", function (e) {
+        if (!ldr_mouseDown) return;
+        ldr_mouseDown = false;
+        var dx = e.clientX - ldr_startX, dy = e.clientY - ldr_startY;
+        if (Math.abs(dx) >= 40 && Math.abs(dx) >= Math.abs(dy)) {
+          if (dx < 0) ldr_next(); else ldr_prev();
+        }
+      });
+    }
+
+    // 初始化
+    ldr_buildCards();
+    var wrapEl = document.getElementById("ldrWrap");
+    wrapEl.addEventListener("touchstart", ldr_handleStart, { passive: true });
+    wrapEl.addEventListener("touchend", ldr_handleEnd);
+    ldr_bindMouse();
+  </script>
+</body>
+</html>

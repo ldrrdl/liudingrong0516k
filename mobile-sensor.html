@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!--
+    姓名: 刘丁荣
+    学号: 24002120516
+    建立时间: 2026-11-18 10:40
+    使用大模型: GLM-5.3-Flash
+    功能名称: 摇一摇抽今日菜谱（devicemotion + 阈值 18 + 1.5s 冷却 + 降级按钮）
+  -->
+  <title>摇一摇 · 今日菜谱</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, #f97316 0%, #ea580c 45%, #c2410c 100%);
+      color: #fff; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px 20px;
+    }
+    .ldr_stage { width: 100%; max-width: 400px; text-align: center; }
+    .ldr_title { font-size: 24px; font-weight: 800; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
+    .ldr_sub { margin-top: 8px; font-size: 13px; opacity: .85; }
+    /* 视差装饰球：固定在背景层，倾斜时按各自系数位移，与前景形成层次 */
+    .ldr_deco {
+      position: fixed; border-radius: 50%;
+      pointer-events: none; z-index: 0; will-change: transform;
+    }
+    .ldr_deco--a { width: 230px; height: 230px; left: -80px; top: -70px; background: rgba(255,255,255,.10); }
+    .ldr_deco--b { width: 170px; height: 170px; right: -60px; bottom: 90px; background: rgba(255,255,255,.08); }
+    /* 手机实测视频区块 */
+    .ldr_media { margin-top: 22px; }
+    .ldr_media-title { font-size: 14px; font-weight: 700; letter-spacing: 3px; margin-bottom: 10px; opacity: .95; }
+    .ldr_video {
+      display: block; width: 100%; border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28); background: #000;
+    }
+    /* 视差承载层：标题与结果卡随倾斜小幅平移，速率不同产生前后景深 */
+    .ldr_parallax { will-change: transform; }
+    .ldr_title { will-change: transform; }
+    /* 结果卡：弹出动画 */
+    .ldr_card {
+      margin-top: 28px; padding: 34px 24px;
+      background: #fff; color: #431407;
+      border-radius: 20px; box-shadow: 0 16px 44px rgba(0,0,0,.28);
+    }
+    .ldr_label { font-size: 12px; letter-spacing: 4px; color: #c2410c; font-weight: 700; }
+    .ldr_dish { margin-top: 12px; font-size: 30px; font-weight: 800; letter-spacing: 2px; }
+    .ldr_desc { margin-top: 12px; font-size: 14px; line-height: 1.7; color: #78716c; }
+    .ldr_card.ldr_pop { animation: ldr_pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+    @keyframes ldr_pop {
+      0% { transform: scale(.55); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    /* 降级提示与按钮 */
+    .ldr_fallback { margin-top: 22px; display: none; }
+    .ldr_fallback.ldr_show { display: block; }
+    .ldr_fallback p { font-size: 14px; opacity: .92; }
+    .ldr_drawbtn {
+      margin-top: 14px; padding: 12px 36px;
+      background: #fff; color: #c2410c;
+      border: none; border-radius: 999px;
+      font-size: 15px; font-weight: 700; letter-spacing: 2px;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,.2);
+    }
+    .ldr_drawbtn:active { transform: scale(.96); }
+    .ldr_status { margin-top: 14px; font-size: 12px; opacity: .8; min-height: 16px; }
+    .ldr_back { display: block; margin-top: 26px; color: rgba(255,255,255,.85); font-size: 13px; text-decoration: none; }
+    .ldr_back:hover { color: #fff; }
+    /* 降级原因说明 */
+    .ldr_note {
+      margin-top: 20px; padding: 14px 16px;
+      background: rgba(255,255,255,.14); border-radius: 12px;
+      font-size: 12px; line-height: 1.8; text-align: left; opacity: .92;
+    }
+  </style>
+</head>
+<body>
+  <div class="ldr_deco ldr_deco--a" id="ldrDecoA"></div>
+  <div class="ldr_deco ldr_deco--b" id="ldrDecoB"></div>
+  <div class="ldr_stage">
+    <h1 class="ldr_title">摇一摇手机，抽今日菜谱</h1>
+    <p class="ldr_sub">拿起手机用力摇一摇，看看今天吃什么</p>
+
+    <div class="ldr_parallax" id="ldrParaCard">
+      <div class="ldr_card" id="ldrCard">
+        <div class="ldr_label">今日菜谱</div>
+        <div class="ldr_dish" id="ldrDish">—</div>
+        <p class="ldr_desc" id="ldrDesc">等待你摇一摇揭晓…</p>
+      </div>
+    </div>
+
+    <div class="ldr_fallback" id="ldrFallback">
+      <p id="ldrFallbackText">当前设备不支持，请用手机打开</p>
+      <button class="ldr_drawbtn" id="ldrDrawBtn" type="button">点我抽一次</button>
+    </div>
+    <div class="ldr_status" id="ldrStatus"></div>
+
+    <div class="ldr_media">
+      <div class="ldr_media-title">手机实测</div>
+      <video class="ldr_video" src="./video/mobile-sensor-demo.mp4" controls playsinline preload="metadata"></video>
+    </div>
+
+    <div class="ldr_note">
+      <b>为什么必须做降级：</b>传感器能力依赖硬件与系统授权——桌面浏览器没有加速度计；
+      iOS 13+ 要求用户手势触发 requestPermission 才允许读取；
+      部分安卓 WebView 或隐私模式下事件存在但永远不下发数据。
+      任何一环缺失页面就会"死"住，降级按钮保证任何设备上功能都可达。
+    </div>
+
+    <a class="ldr_back" href="./index.html">&laquo; 返回课堂目录</a>
+  </div>
+
+  <script>
+    // 菜谱数据：8 道家常菜
+    var ldr_dishes = [
+      { name: "红烧狮子头", desc: "肥瘦三七的肉丸小火慢炖，酥烂入味。" },
+      { name: "番茄炒蛋",   desc: "国民下饭菜，酸甜嫩滑，十分钟出锅。" },
+      { name: "糖醋排骨",   desc: "焦糖色裹排骨，酸甜口，老少通吃。" },
+      { name: "清蒸鲈鱼",   desc: "旺火八分钟，葱丝热油一激，鲜掉眉毛。" },
+      { name: "麻婆豆腐",   desc: "麻辣鲜香烫，豆腐嫩而不碎。" },
+      { name: "地三鲜",     desc: "土豆茄子青椒过油同烧，东北饭桌常客。" },
+      { name: "可乐鸡翅",   desc: "甜咸口入门硬菜，新手零失败。" },
+      { name: "蒜蓉西兰花", desc: "清爽解腻，蒜香提味。" }
+    ];
+
+    var ldr_locked = false;     // 1.5 秒冷却锁
+    var ldr_lastDish = -1;      // 上次抽中的菜，避免连摇重复
+    var ldr_gotData = false;    // 是否收到过传感器数据
+    var ldr_sensorOK = false;   // 传感器监听是否成功建立
+    var ldr_tilt = 0;           // 平滑后的左右倾斜值（约 -1~1，对应倾角 ±45°）
+    var ldr_btnMode = "draw";   // 按钮模式：draw=手动抽菜，auth=iOS 授权
+
+    // 实现：把平滑后的倾斜值按不同系数分配到装饰球、标题与结果卡，形成倾斜视差
+    function ldr_applyParallax() {
+      document.getElementById("ldrDecoA").style.transform = "translateX(" + (ldr_tilt * -22).toFixed(1) + "px)";
+      document.getElementById("ldrDecoB").style.transform = "translateX(" + (ldr_tilt * 30).toFixed(1) + "px)";
+      document.querySelector(".ldr_title").style.transform = "translateX(" + (ldr_tilt * -10).toFixed(1) + "px)";
+      document.getElementById("ldrParaCard").style.transform = "translateX(" + (ldr_tilt * 8).toFixed(1) + "px)";
+    }
+
+    // 实现：桌面降级——用鼠标横向位置模拟手机倾斜（屏幕左=向左倾斜，右=向右）
+    function ldr_bindMouseTilt() {
+      window.addEventListener("mousemove", function (e) {
+        ldr_tilt = (e.clientX / window.innerWidth - 0.5) * 2;
+        ldr_applyParallax();
+      });
+    }
+
+    // 实现：随机抽取一道菜显示在结果卡上，并重触发弹出动画
+    function ldr_drawDish() {
+      var i;
+      do { i = Math.floor(Math.random() * ldr_dishes.length); } while (i === ldr_lastDish && ldr_dishes.length > 1);
+      ldr_lastDish = i;
+      document.getElementById("ldrDish").textContent = ldr_dishes[i].name;
+      document.getElementById("ldrDesc").textContent = ldr_dishes[i].desc;
+      var card = document.getElementById("ldrCard");
+      card.classList.remove("ldr_pop");
+      void card.offsetWidth;      // 强制回流，让动画可以重新触发
+      card.classList.add("ldr_pop");
+    }
+
+    // 实现：进入冷却，1.5 秒内忽略后续摇动
+    function ldr_lock() {
+      ldr_locked = true;
+      document.getElementById("ldrStatus").textContent = "摇动已触发！1.5 秒冷却中…";
+      setTimeout(function () {
+        ldr_locked = false;
+        document.getElementById("ldrStatus").textContent = "";
+      }, 1500);
+    }
+
+    // 实现：devicemotion 事件处理——计算合成加速度判定摇动，同时用重力 x 分量做倾斜视差
+    function ldr_handleMotion(e) {
+      var a = e.accelerationIncludingGravity;
+      if (!a || (a.x === null && a.y === null && a.z === null)) return;
+      ldr_gotData = true;
+      // 倾斜视差：a.x 是左右倾斜时的重力分量（约 ±1 对应 ±45°），指数平滑去抖后分配到各层
+      var target = Math.max(-1, Math.min(1, a.x));
+      ldr_tilt += (target - ldr_tilt) * 0.25;
+      ldr_applyParallax();
+      var g = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+      if (g > 18 && !ldr_locked) {
+        ldr_drawDish();
+        ldr_lock();
+      }
+    }
+
+    // 实现：降级——显示"当前设备不支持"提示与手动抽菜按钮
+    function ldr_showFallback(text) {
+      document.getElementById("ldrFallbackText").textContent = text;
+      document.getElementById("ldrFallback").classList.add("ldr_show");
+    }
+
+    // 实现：初始化——按设备能力走三条路径：无事件降级 / iOS 需授权 / 普通设备直接监听
+    function ldr_init() {
+      if (typeof window.DeviceMotionEvent === "undefined") {
+        // 环境根本没有 devicemotion（桌面浏览器常见）
+        ldr_showFallback("当前设备不支持，请用手机打开");
+        ldr_bindMouseTilt();
+        return;
+      }
+      if (typeof window.DeviceMotionEvent.requestPermission === "function") {
+        // iOS 13+：必须由用户点击触发 requestPermission 授权，传感器才会下发数据
+        ldr_showFallback("iPhone 需要授权动作传感器才能摇一摇");
+        document.getElementById("ldrDrawBtn").textContent = "点我授权摇一摇";
+        ldr_btnMode = "auth";
+        return;
+      }
+      // 普通设备（安卓 / 老版 iOS）：直接监听
+      window.addEventListener("devicemotion", ldr_handleMotion);
+      ldr_sensorOK = true;
+      // 1.2 秒内一条数据都收不到（隐私模式 / WebView 屏蔽）也降级
+      setTimeout(function () {
+        if (!ldr_gotData) {
+          ldr_showFallback("当前设备不支持，请用手机打开");
+          ldr_bindMouseTilt(); // 没有传感器就让鼠标模拟倾斜，视差效果在桌面也能演示
+        }
+      }, 1200);
+    }
+
+    // 实现：iPhone 授权流程——用户点击按钮（手势内）调用 requestPermission，授权后绑定监听
+    function ldr_requestIOS() {
+      DeviceMotionEvent.requestPermission()
+        .then(function (state) {
+          if (state === "granted") {
+            window.addEventListener("devicemotion", ldr_handleMotion);
+            ldr_sensorOK = true;
+            document.getElementById("ldrFallback").classList.remove("ldr_show");
+            document.getElementById("ldrStatus").textContent = "授权成功！现在摇一摇手机试试";
+            ldr_drawDish(); // 给一个即时反馈
+          } else {
+            // 授权被拒绝：转为纯手动模式
+            document.getElementById("ldrFallbackText").textContent = "未获得传感器授权，可手动抽菜";
+            document.getElementById("ldrDrawBtn").textContent = "点我抽一次";
+            ldr_btnMode = "draw";
+          }
+        })
+        .catch(function () {
+          ldr_showFallback("授权请求失败，请用手机浏览器（Safari）打开本页");
+          ldr_bindMouseTilt();
+        });
+    }
+
+    // 实现：降级/授权按钮——iOS 下先走授权，其余情况直接手动摇一次
+    document.getElementById("ldrDrawBtn").addEventListener("click", function () {
+      if (ldr_btnMode === "auth") {
+        ldr_requestIOS(); // requestPermission 必须在用户手势调用栈内触发
+      } else {
+        ldr_drawDish();
+      }
+    });
+
+    ldr_init();
+  </script>
+</body>
+</html>

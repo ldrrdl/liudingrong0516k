@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <!--
+    姓名: 刘丁荣
+    学号: 24002120516
+    建立时间: 2026-11-18 10:35
+    使用大模型: GLM-5.3-Flash
+    功能名称: 移动端图片查看器（双指缩放 1~4 倍、单指拖动、双击 1x/2x 切换）
+  -->
+  <title>掌中观止 · 图片查看器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #f5f5f4; color: #1c1917;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .ldr_stage { width: 100%; max-width: 480px; }
+    /* 查看器容器：禁溢出、禁浏览器默认触摸行为、禁文字选中 */
+    .ldr_viewer {
+      width: 100%; height: 62vh;
+      border-radius: 16px; overflow: hidden;
+      background: #e7e5e4;
+      touch-action: none;      /* 手势全部交给 JS，浏览器不再处理滚动/缩放 */
+      user-select: none; -webkit-user-select: none;
+      box-shadow: 0 14px 40px rgba(0,0,0,.18);
+      position: relative;
+    }
+    .ldr_viewer img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: translate(0, 0) scale(1);
+      transition: transform .25s ease;   /* 双击切换时的 0.25s 过渡 */
+      pointer-events: none;              /* 事件统一收在容器上 */
+    }
+    .ldr_viewer img.ldr_no-anim { transition: none; } /* 手势过程中关闭过渡，跟手 */
+    .ldr_scale {
+      margin-top: 14px; text-align: center;
+      font-size: 14px; letter-spacing: 2px; color: #57534e;
+    }
+    .ldr_banner {
+      margin-top: 14px; padding: 10px 16px;
+      background: #fef3c7; color: #92400e;
+      border: 1px solid #fcd34d; border-radius: 10px;
+      font-size: 14px; text-align: center;
+      transition: opacity .6s;
+    }
+    .ldr_back { display: block; margin-top: 14px; color: #78716c; font-size: 13px; text-align: center; text-decoration: none; }
+    .ldr_back:hover { color: #1c1917; }
+    /* 手机实测视频区块 */
+    .ldr_media { margin-top: 22px; }
+    .ldr_media-title { font-size: 14px; font-weight: 700; letter-spacing: 3px; margin-bottom: 10px; opacity: .95; }
+    .ldr_video {
+      display: block; width: 100%; border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28); background: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="ldr_stage">
+    <div class="ldr_viewer" id="ldrViewer">
+      <img id="ldrImg" src="./img/zoom-art.jpg" alt="水墨松鹤图">
+    </div>
+    <div class="ldr_scale" id="ldrScale">当前缩放 1.0x</div>
+    <div class="ldr_banner" id="ldrBanner">双指缩放请用手机打开（桌面可双击体验 1x/2x）</div>
+
+    <div class="ldr_media">
+      <div class="ldr_media-title">手机实测</div>
+      <video class="ldr_video" src="./video/mobile-zoom-demo.mp4" controls playsinline preload="metadata"></video>
+    </div>
+
+    <a class="ldr_back" href="./index.html">&laquo; 返回课堂目录</a>
+  </div>
+
+  <script>
+    /* ========== 状态变量 ========== */
+    var ldr_scale = 1;            // 当前缩放倍数（1~4）
+    var ldr_tx = 0, ldr_ty = 0;   // 图片平移偏移量（拖动）
+    var ldr_mode = "none";        // 当前手势模式：none / drag / pinch
+    var ldr_startDist = 0;        // 双指初始距离
+    var ldr_startScale = 1;       // 双指捏合开始时的缩放倍数
+    var ldr_startMid = null;      // 双指捏合开始时的两指中点（屏幕坐标）
+    var ldr_pinchImgPt = null;    // 捏合开始时中点对应的图片内容坐标（缩放基准点）
+    var ldr_dragX = 0, ldr_dragY = 0;      // 单指拖动起点
+    var ldr_baseTx = 0, ldr_baseTy = 0;    // 单指拖动开始时的偏移
+    var ldr_lastTap = 0;          // 上次单指点按时间（双击检测）
+    var ldr_lastTapX = 0, ldr_lastTapY = 0;
+    var ldr_lastToggle = 0;       // 上次双击切换时间——防止 touchend 检测与浏览器派生的 dblclick 重复触发而互相抵消
+
+    var ldr_viewerEl = document.getElementById("ldrViewer");
+    var ldr_imgEl = document.getElementById("ldrImg");
+    var ldr_scaleEl = document.getElementById("ldrScale");
+
+    // 实现：把 scale 与偏移应用到图片 transform 上
+    function ldr_applyTransform() {
+      ldr_imgEl.style.transform = "translate(" + ldr_tx + "px," + ldr_ty + "px) scale(" + ldr_scale + ")";
+      ldr_scaleEl.textContent = "当前缩放 " + ldr_scale.toFixed(1) + "x";
+    }
+
+    // 实现：松手后把偏移量限制在边界内，图片不会被拖出查看器
+    function ldr_clampOffset() {
+      if (ldr_scale <= 1) { ldr_tx = 0; ldr_ty = 0; return; }
+      var cw = ldr_viewerEl.clientWidth, ch = ldr_viewerEl.clientHeight;
+      var iw = ldr_imgEl.offsetWidth * ldr_scale, ih = ldr_imgEl.offsetHeight * ldr_scale;
+      var maxX = Math.max(0, (iw - cw) / 2), maxY = Math.max(0, (ih - ch) / 2);
+      ldr_tx = Math.min(maxX, Math.max(-maxX, ldr_tx));
+      ldr_ty = Math.min(maxY, Math.max(-maxY, ldr_ty));
+    }
+
+    // 实现：计算两指之间的距离
+    function ldr_getDist(t) {
+      var dx = t[0].clientX - t[1].clientX;
+      var dy = t[0].clientY - t[1].clientY;
+      return Math.hypot(dx, dy);
+    }
+
+    // 实现：计算两指中点的屏幕坐标
+    function ldr_getMid(t) {
+      return { x: (t[0].clientX + t[1].clientX) / 2, y: (t[0].clientY + t[1].clientY) / 2 };
+    }
+
+    // 实现：把屏幕坐标换算为图片内容坐标（相对图片中心、除以当前缩放）
+    function ldr_screenToImg(px, py) {
+      var rect = ldr_viewerEl.getBoundingClientRect();
+      return {
+        x: (px - rect.left - rect.width / 2 - ldr_tx) / ldr_scale,
+        y: (py - rect.top - rect.height / 2 - ldr_ty) / ldr_scale
+      };
+    }
+
+    // 实现：双指捏合缩放——按距离比例换算新倍数（限制 1~4），并让捏合开始时中点对应的图点保持不动（以中点为缩放基准）
+    function ldr_handlePinchMove(t) {
+      var ratio = ldr_getDist(t) / ldr_startDist;
+      var newScale = Math.min(4, Math.max(1, ldr_startScale * ratio));
+      var rect = ldr_viewerEl.getBoundingClientRect();
+      var mid = ldr_getMid(t);
+      // 中点相对容器中心的屏幕坐标
+      var mx = mid.x - rect.left - rect.width / 2;
+      var my = mid.y - rect.top - rect.height / 2;
+      // 缩放基准：pinchImgPt 在新倍数下仍应对准中点 → mx = px*newScale + tx
+      ldr_tx = mx - ldr_pinchImgPt.x * newScale;
+      ldr_ty = my - ldr_pinchImgPt.y * newScale;
+      ldr_scale = newScale;
+      ldr_applyTransform();
+    }
+
+    // 实现：单指拖动（仅 scale > 1 时生效），以按下时的偏移为基准累加位移
+    function ldr_handleDragMove(t) {
+      if (ldr_scale <= 1) return;
+      ldr_tx = ldr_baseTx + (t[0].clientX - ldr_dragX);
+      ldr_ty = ldr_baseTy + (t[0].clientY - ldr_dragY);
+      ldr_clampOffset();
+      ldr_applyTransform();
+    }
+
+    // 实现：双击在 1x 与 2x 之间切换（带 0.25s 过渡，切回 1x 时居中复位）；350ms 防重入锁保证只生效一次
+    function ldr_toggleZoom() {
+      var now = Date.now();
+      if (now - ldr_lastToggle < 350) return; // touchend 检测与 dblclick 同时到来时只认第一次
+      ldr_lastToggle = now;
+      if (ldr_scale > 1) {
+        ldr_scale = 1; ldr_tx = 0; ldr_ty = 0;
+      } else {
+        ldr_scale = 2; ldr_clampOffset();
+      }
+      ldr_imgEl.classList.remove("ldr_no-anim"); // 恢复过渡动画
+      ldr_applyTransform();
+    }
+
+    // 实现：touchstart——记录单指/双指状态、两指初始距离与缩放基准点；拦截浏览器默认手势解释
+    function ldr_onTouchStart(e) {
+      if (e.cancelable) e.preventDefault(); // 阻止 Safari 把连续 tap 解释为双击缩放页面
+      var t = e.touches;
+      if (t.length === 1) {
+        ldr_mode = "drag";
+        ldr_dragX = t[0].clientX; ldr_dragY = t[0].clientY;
+        ldr_baseTx = ldr_tx; ldr_baseTy = ldr_ty;
+      } else if (t.length === 2) {
+        ldr_mode = "pinch";
+        ldr_startDist = ldr_getDist(t);
+        ldr_startScale = ldr_scale;
+        ldr_startMid = ldr_getMid(t);
+        ldr_pinchImgPt = ldr_screenToImg(ldr_startMid.x, ldr_startMid.y);
+      }
+      ldr_imgEl.classList.add("ldr_no-anim"); // 手势过程要跟手，关闭过渡
+    }
+
+    // 实现：touchmove——双指走缩放逻辑，单指走拖动逻辑
+    function ldr_onTouchMove(e) {
+      if (e.cancelable) e.preventDefault(); // touch-action:none 之外的保险
+      var t = e.touches;
+      if (ldr_mode === "pinch" && t.length >= 2) {
+        ldr_handlePinchMove(t);
+      } else if (ldr_mode === "drag" && t.length === 1) {
+        ldr_handleDragMove(t);
+      }
+    }
+
+    // 实现：touchend——手指全部离开时收尾（边界回弹 + 双击检测）；拦截派生的 click/dblclick
+    function ldr_onTouchEnd(e) {
+      if (e.cancelable) e.preventDefault(); // 阻止浏览器派生 dblclick 与 touchend 检测重复触发
+      var t = e.touches;
+      if (t.length === 0) {
+        // 双击检测：两次轻点间隔 < 400ms 且位移很小（放宽窗口，兼容 iOS 的事件延迟）
+        var c = e.changedTouches[0];
+        var now = Date.now();
+        if (now - ldr_lastTap < 400 && Math.hypot(c.clientX - ldr_lastTapX, c.clientY - ldr_lastTapY) < 30) {
+          ldr_toggleZoom();
+          ldr_lastTap = 0;
+        } else {
+          ldr_lastTap = now; ldr_lastTapX = c.clientX; ldr_lastTapY = c.clientY;
+        }
+        ldr_clampOffset();          // 松手后把图片拉回边界内
+        ldr_applyTransform();
+        ldr_mode = "none";
+        ldr_imgEl.classList.remove("ldr_no-anim");
+      } else if (t.length === 1 && ldr_mode === "pinch") {
+        // 双指松开一指后转为单指拖动，重新记录拖动基准
+        ldr_mode = "drag";
+        ldr_dragX = t[0].clientX; ldr_dragY = t[0].clientY;
+        ldr_baseTx = ldr_tx; ldr_baseTy = ldr_ty;
+      }
+    }
+
+    // 实现：桌面兜底——双击（dblclick）同样触发 1x/2x 切换
+    ldr_viewerEl.addEventListener("dblclick", function (e) {
+      e.preventDefault();
+      ldr_toggleZoom();
+    });
+
+    ldr_viewerEl.addEventListener("touchstart", ldr_onTouchStart, { passive: false });
+    ldr_viewerEl.addEventListener("touchmove", ldr_onTouchMove, { passive: false });
+    ldr_viewerEl.addEventListener("touchend", ldr_onTouchEnd);
+
+    // 实现：页面打开 10 秒后提示横幅自动淡出
+    setTimeout(function () {
+      var b = document.getElementById("ldrBanner");
+      if (b) b.style.opacity = "0";
+    }, 10000);
+  </script>
+</body>
+</html>
