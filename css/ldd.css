@@ -93,16 +93,6 @@ h2 { margin-bottom: 0; font-family: 'Noto Serif SC', Georgia, serif; font-size: 
 blockquote { margin: 0; padding-left: 22px; border-left: 3px solid var(--orange); color: var(--muted); font-size: 13px; line-height: 2; }
 .site-footer { display: flex; justify-content: space-between; padding: 22px 0 28px; border-top: 1px solid var(--line); color: var(--muted); font-family: Consolas, monospace; font-size: 10px; letter-spacing: .04em; }
 
-/* ===== AI 能力实测模块 ===== */
-.ldr_ai-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 26px; }
-.ldr_ai-card { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; transition: transform .2s, box-shadow .2s; }
-.ldr_ai-card:hover { transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,.10); }
-.ldr_ai-shot { display: block; width: 100%; height: 210px; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); }
-.ldr_ai-body { padding: 14px 16px 16px; }
-.ldr_ai-name { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; }
-.ldr_ai-tag { flex: none; font-family: Consolas, monospace; font-size: 10px; letter-spacing: .04em; color: var(--orange); border: 1px solid var(--orange); border-radius: 999px; padding: 2px 10px; }
-.ldr_ai-desc { margin: 8px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.8; }
-
 @media (max-width: 900px) {
     .lesson-grid { grid-template-columns: repeat(2, 1fr); }
     .hero-note { right: 4%; }
@@ -120,6 +110,5 @@ blockquote { margin: 0; padding-left: 22px; border-left: 3px solid var(--orange)
     .lesson-grid { grid-template-columns: 1fr; gap: 12px; }
     .lesson-card { min-height: 285px; }
     .prompt-section { grid-template-columns: 1fr; gap: 18px; padding-top: 55px; }
-    .ldr_ai-grid { grid-template-columns: 1fr; }
     .site-footer { display: block; }.site-footer span { display: block; margin-bottom: 5px; }
 }

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="美食街项目 AI 能力实测：聊天助手、知识库问答 RAG、图像识别、语音识别 ASR">
+    <title>AI 能力实测 · 刘丁荣的课堂实践</title>
+    <!--
+        作者：刘丁荣（学号 24002120516）
+        建立时间：2026-11-25
+        使用大模型：GLM-5.3-Flash
+        功能名称：AI 能力实测模块——展示美食街项目接入大模型的四项能力实测截图
+    -->
+    <style>
+        /* 基础与配色：延续课堂目录的纸感档案风 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --ink: #1c1917; --muted: #6b6259; --line: #e7e2d8; --orange: #c2410c; --paper: #f7f5f0; }
+        body { background: var(--paper); color: var(--ink); font-family: "Noto Serif SC", "Songti SC", serif; }
+        .ldr_wrap { width: min(100% - 36px, 1080px); margin: 0 auto; }
+
+        /* 顶部导航：返回课堂目录 */
+        .ldr_top { display: flex; justify-content: space-between; align-items: center; height: 74px; border-bottom: 1px solid var(--line); }
+        .ldr_brand { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; text-decoration: none; color: var(--ink); }
+        .ldr_brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--ink); color: #fff; font-size: 15px; }
+        .ldr_back { color: var(--muted); font-size: 13px; text-decoration: none; }
+        .ldr_back:hover { color: var(--orange); }
+
+        /* 头部说明 */
+        .ldr_hero { padding: 52px 0 30px; border-bottom: 1px solid var(--line); }
+        .ldr_hero-label { font-family: Consolas, monospace; font-size: 11px; letter-spacing: .22em; color: var(--orange); }
+        .ldr_hero h1 { margin: 14px 0 18px; font-size: 34px; letter-spacing: .01em; }
+        .ldr_hero-quote { max-width: 760px; padding-left: 22px; border-left: 3px solid var(--orange); color: var(--muted); font-size: 13px; line-height: 2; }
+
+        /* 能力卡片网格：截图大图 + 名称/标签/描述 */
+        .ldr_grid { display: grid; grid-template-columns: 1fr; gap: 30px; padding: 40px 0 20px; }
+        .ldr_card { background: #fff; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+        .ldr_card-shot { display: block; width: 100%; border-bottom: 1px solid var(--line); }
+        .ldr_card-body { padding: 18px 22px 22px; }
+        .ldr_card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .ldr_card-name { font-size: 20px; font-weight: 700; }
+        .ldr_card-tag { flex: none; font-family: Consolas, monospace; font-size: 11px; letter-spacing: .08em; color: var(--orange); border: 1px solid var(--orange); border-radius: 999px; padding: 3px 12px; }
+        .ldr_card-desc { margin-top: 10px; max-width: 720px; color: var(--muted); font-size: 13.5px; line-height: 2; }
+        .ldr_card-api { margin-top: 10px; font-family: Consolas, monospace; font-size: 11.5px; color: var(--ink); background: var(--paper); border: 1px dashed var(--line); border-radius: 8px; padding: 8px 12px; display: inline-block; }
+
+        /* 底部返回 */
+        .ldr_foot { padding: 26px 0 40px; border-top: 1px solid var(--line); text-align: center; }
+        .ldr_foot a { color: var(--muted); font-size: 13px; text-decoration: none; }
+        .ldr_foot a:hover { color: var(--orange); }
+
+        @media (max-width: 600px) {
+            .ldr_hero h1 { font-size: 26px; }
+            .ldr_card-name { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="ldr_top">
+        <div class="ldr_wrap ldr_top-row">
+            <a class="ldr_brand" href="./index.html"><span class="ldr_brand-mark">L</span>刘丁荣 · 课堂实践</a>
+            <a class="ldr_back" href="./index.html">返回课堂目录 &raquo;</a>
+        </div>
+    </header>
+
+    <main class="ldr_wrap">
+        <section class="ldr_hero">
+            <p class="ldr_hero-label">AI TEST / 大模型能力实测</p>
+            <h1>AI 能力实测 · 美食街项目接入大模型</h1>
+            <p class="ldr_hero-quote">
+                四项 AI 能力全部实测通过：对话问答、知识库检索增强（RAG）、图像理解、语音转文字。
+                能力统一封装在美食街项目后端，本地服务运行于 localhost:8516，大模型服务由硅基流动提供，以下为各模块实测截图。
+            </p>
+        </section>
+
+        <div class="ldr_grid">
+            <figure class="ldr_card">
+                <img class="ldr_card-shot" src="./img/ai/ai-chat.png" alt="AI 聊天助手实测截图：对话式美食街客服">
+                <figcaption class="ldr_card-body">
+                    <div class="ldr_card-top">
+                        <span class="ldr_card-name">① AI 聊天助手</span>
+                        <span class="ldr_card-tag">Chat</span>
+                    </div>
+                    <p class="ldr_card-desc">
+                        对话式客服助手，回答限定在美食街营业时间、招牌菜与配送范围等语境；
+                        超出范围的问题会被礼貌拒绝并引导留言，前端零密钥，模型与 Key 由后端配置。
+                    </p>
+                    <span class="ldr_card-api">后端接口：POST /api/ai/chat ｜ 服务商：硅基流动</span>
+                </figcaption>
+            </figure>
+
+            <figure class="ldr_card">
+                <img class="ldr_card-shot" src="./img/ai/ai-rag.png" alt="知识库问答 RAG 实测截图：知识条目管理表格">
+                <figcaption class="ldr_card-body">
+                    <div class="ldr_card-top">
+                        <span class="ldr_card-name">② 知识库问答（RAG）</span>
+                        <span class="ldr_card-tag">RAG</span>
+                    </div>
+                    <p class="ldr_card-desc">
+                        上传 doc / docx / ppt / pptx / pdf / txt 文档（20MB 以内）构建专属知识库，
+                        提问时先检索命中的知识片段，再交给大模型组织回答——问答结果与店铺真实信息一致；
+                        支持知识条目的查看与删除管理。
+                    </p>
+                    <span class="ldr_card-api">后端接口：POST /api/kb/chat ｜ 检索增强：知识片段 + 大模型</span>
+                </figcaption>
+            </figure>
+
+            <figure class="ldr_card">
+                <img class="ldr_card-shot" src="./img/ai/ai-vision.png" alt="图像识别实测截图：上传人物肖像并输出识别结果">
+                <figcaption class="ldr_card-body">
+                    <div class="ldr_card-top">
+                        <span class="ldr_card-name">③ 图像识别</span>
+                        <span class="ldr_card-tag">Vision</span>
+                    </div>
+                    <p class="ldr_card-desc">
+                        上传图片后由多模态视觉模型输出识别结果，包含主体对象、人物特征、
+                        构图视角与画面氛围的完整中文描述——截图中对人物肖像的描述细致到发型、姿态与神态。
+                    </p>
+                    <span class="ldr_card-api">能力类型：多模态视觉理解 ｜ 页面：vision.html</span>
+                </figcaption>
+            </figure>
+
+            <figure class="ldr_card">
+                <img class="ldr_card-shot" src="./img/ai/ai-asr.png" alt="语音识别 ASR 实测截图：音频转文字结果">
+                <figcaption class="ldr_card-body">
+                    <div class="ldr_card-top">
+                        <span class="ldr_card-name">④ 语音识别（ASR）</span>
+                        <span class="ldr_card-tag">ASR</span>
+                    </div>
+                    <p class="ldr_card-desc">
+                        上传音频 / 视频文件（mp3 / wav / webm / m4a / mp4）或浏览器直接录音（MediaRecorder，webm 格式），
+                        识别结果为文字——实测把一段录音准确转写为「你好你好」。
+                    </p>
+                    <span class="ldr_card-api">模型：FunAudioLLM / SenseVoiceSmall ｜ 页面：asr.html</span>
+                </figcaption>
+            </figure>
+        </div>
+
+        <footer class="ldr_foot">
+            <a href="./index.html">&laquo; 返回课堂目录</a>
+        </footer>
+    </main>
+</body>
+</html>
