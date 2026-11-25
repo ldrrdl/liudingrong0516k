@@ -143,6 +143,44 @@
             </div>
         </section>
 
+        <section class="prompt-section" aria-labelledby="ldr-ai-title">
+            <div class="prompt-label">AI TEST / 大模型能力实测</div>
+            <div class="prompt-content">
+                <h2 id="ldr-ai-title">AI 能力实测 · 美食街项目接入大模型</h2>
+                <blockquote>四项 AI 能力全部实测通过：对话问答、知识库检索增强（RAG）、图像理解、语音转文字。能力统一封装在美食街项目后端，本地服务运行于 localhost:8516，以下为各模块实测截图。</blockquote>
+                <div class="ldr_ai-grid">
+                    <figure class="ldr_ai-card">
+                        <img class="ldr_ai-shot" src="./img/ai/ai-chat.png" alt="AI 聊天助手实测截图：对话式美食街客服">
+                        <figcaption class="ldr_ai-body">
+                            <div class="ldr_ai-name">AI 聊天助手 <span class="ldr_ai-tag">Chat</span></div>
+                            <p class="ldr_ai-desc">对话式客服助手，回答限定在美食街营业时间、招牌菜与配送范围等语境；后端接口 POST /api/ai/chat，服务商硅基流动。</p>
+                        </figcaption>
+                    </figure>
+                    <figure class="ldr_ai-card">
+                        <img class="ldr_ai-shot" src="./img/ai/ai-rag.png" alt="知识库问答 RAG 实测截图：知识条目管理表格">
+                        <figcaption class="ldr_ai-body">
+                            <div class="ldr_ai-name">知识库问答（RAG） <span class="ldr_ai-tag">RAG</span></div>
+                            <p class="ldr_ai-desc">上传 doc / pptx / pdf / txt 等文档构建专属知识库，检索命中片段后交给大模型组织回答；支持知识条目管理与删除。</p>
+                        </figcaption>
+                    </figure>
+                    <figure class="ldr_ai-card">
+                        <img class="ldr_ai-shot" src="./img/ai/ai-vision.png" alt="图像识别实测截图：上传人物肖像并输出识别结果">
+                        <figcaption class="ldr_ai-body">
+                            <div class="ldr_ai-name">图像识别 <span class="ldr_ai-tag">Vision</span></div>
+                            <p class="ldr_ai-desc">上传图片后由多模态视觉模型输出识别结果：主体对象、人物特征、构图与氛围的完整中文描述。</p>
+                        </figcaption>
+                    </figure>
+                    <figure class="ldr_ai-card">
+                        <img class="ldr_ai-shot" src="./img/ai/ai-asr.png" alt="语音识别 ASR 实测截图：音频转文字结果">
+                        <figcaption class="ldr_ai-body">
+                            <div class="ldr_ai-name">语音识别（ASR） <span class="ldr_ai-tag">ASR</span></div>
+                            <p class="ldr_ai-desc">上传音频 / 视频或浏览器直接录音（MediaRecorder），识别结果为文字；模型 FunAudioLLM / SenseVoiceSmall。</p>
+                        </figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
         <section class="prompt-section" aria-labelledby="prompt-title">
             <div class="prompt-label">PROMPT / 课堂任务</div>
             <div class="prompt-content">
